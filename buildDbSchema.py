@@ -4,6 +4,8 @@ import pandas as pd
 from sqlalchemy import (MetaData, Table, Column, Integer, String, Float,
                         DateTime, Boolean, ForeignKey, create_engine)
 
+from exceptions import (TableNotPreprocessedError)
+
 mysql_username = os.environ['MYSQL_USER']
 mysql_password = os.environ['MYSQL_PWD']
 
@@ -24,12 +26,12 @@ users = Table('Users', metadata,
               Column('PerformanceTier', Integer(), nullable=False)
               )
 
-# TODO: Set foreign key for the field "ForumTopicId"
 kernels = Table('Kernels', metadata,
                 Column('Id', Integer(), primary_key=True),
                 Column('AuthorUserId', Integer(), ForeignKey('Users.Id'), nullable=False),
                 Column('CurrentKernelVersionId', Integer(), ForeignKey('KernelVersions.Id')),
                 Column('ForkParentKernelVersionId', Integer(), ForeignKey('KernelVersions.Id')),
+                # TODO: Set foreign key for the field "ForumTopicId"
                 Column('ForumTopicId', Integer()),
                 Column('FirstKernelVersionId', Integer(), ForeignKey('KernelVersions.Id')),
                 Column('CreationDate', DateTime()),
@@ -55,7 +57,7 @@ kernelVersions = Table('KernelVersions', metadata,
                        Column('Id', Integer(), primary_key=True),
                        # TODO: reinsert FK Constraint ForeignKey("Kernels.Id") for "ScriptId"
                        Column('ScriptId', Integer(), nullable=False),
-                       Column('ParentScriptVersionId', Integer(), ForeignKey("KernelVersions.Id")),
+                       Column('ParentScriptVersionId', Integer()),  # ForeignKey("KernelVersions.Id") removed
                        Column('ScriptLanguageId', Integer(), ForeignKey('KernelLanguages.Id'), nullable=False),
                        Column('AuthorUserId', Integer(), ForeignKey('Users.Id'), nullable=False),
                        Column('CreationDate', DateTime(), nullable=False),
@@ -79,10 +81,10 @@ kernelVotes = Table('KernelVotes', metadata,
                     Column('UserId', Integer(), nullable=False),
                     Column('KernelVersionId', Integer(), nullable=False),
                     Column('VoteDate', DateTime(), nullable=False)
-)
-
+                    )
 
 metadata.create_all(engine)
+
 
 # Procedure to map csv files to db tables
 def csv_to_sql(csv_path, date_columns):
@@ -99,31 +101,52 @@ def csv_to_sql(csv_path, date_columns):
     print('"{}" written to database.\n'.format(file_name))
 
 
-
-# Procedure to map csv files to db tables
-def csv_to_pickle_to_sql(dir_path, file_name, date_columns):
-
+def read_data(dir_path, file_name):
     full_path = os.path.join(dir_path, file_name)
     pickle_path = os.path.join(dir_path, '{}.bz2'.format(file_name[:-4]))
 
     print('Reading "{}"...'.format(file_name))
     if os.path.isfile(pickle_path):
+        preprocessed = True
         df = pd.read_pickle(pickle_path)
     else:
         df = pd.read_csv(full_path)
+        preprocessed = False
+    return df, preprocessed
 
+
+# Procedure to map csv files to db tables
+def csv_to_pickle_to_sql(dir_path, file_name, date_columns=[], referenced_tables=None):
+    pickle_path = os.path.join(dir_path, '{}.bz2'.format(file_name[:-4]))
+
+    df, preprocessed = read_data(dir_path, file_name)
+
+    if not preprocessed and ((len(date_columns) > 0) or referenced_tables is not None):
+        print('Pre-processing "{}"...'.format(file_name))
         if len(date_columns) > 0:
-            print('Pre-processing "{}"...'.format(file_name))
+            print('\t- Convert the date format...')
             df[date_columns] = df[date_columns].apply(pd.to_datetime)
+        if referenced_tables is not None:
+            print('\t- Clean the table for referential integrity...')
+            for referenced_table in referenced_tables:
+                rt, prep = read_data(dir_path, referenced_table)
+                if not prep:
+                    raise TableNotPreprocessedError('Table "{}" must be preprocessed.'
+                                                    'Import it before "{}"'.format(referenced_table,
+                                                                                   file_name))
+                print('\t\tOriginal shape: {}.'.format(df.shape))
+                for fk in referenced_tables[referenced_table]:
+                    print('\t\tJoining "{}"...'.format(referenced_table))
+                    join = pd.merge(df, rt, left_on=fk, right_on='Id')
+                    df = df[df[fk].isin(join['Id_y'])]
+                    print('\t\tNew shape: {}.'.format(df.shape))
 
         print('Serializing "{}"...'.format(file_name))
         df.to_pickle(pickle_path)
 
-
     print('Writing "{}"...'.format(file_name))
     df.to_sql(file_name[:-4], engine, if_exists='append', index=False)
     print('"{}" written to database.\n'.format(file_name))
-
 
 
 DIR_PATH = '/Users/luigiquaranta/Downloads/meta-kaggle'
@@ -132,18 +155,23 @@ DIR_PATH = '/Users/luigiquaranta/Downloads/meta-kaggle'
 date_columns = ['RegisterDate']
 csv_to_pickle_to_sql(DIR_PATH, 'Users.csv', date_columns)
 
-
 # KernelLanguages.csv
-date_columns = []
-csv_to_pickle_to_sql(DIR_PATH, 'KernelLanguages.csv', date_columns)
-
+csv_to_pickle_to_sql(DIR_PATH, 'KernelLanguages.csv')
 
 # KernelVersions.csv
 date_columns = [
     'CreationDate',
     'EvaluationDate'
 ]
-csv_to_pickle_to_sql(DIR_PATH, 'KernelVersions.csv', date_columns)
+referenced_tables = {
+    'Users.csv': [
+        'AuthorUserId'
+    ],
+    'KernelLanguages.csv': [
+        'ScriptLanguageId'
+    ]
+}
+csv_to_pickle_to_sql(DIR_PATH, 'KernelVersions.csv', date_columns, referenced_tables)
 
 # # Kernels.csv
 # csv_path = '~/Downloads/meta-kaggle/Kernels.csv'
@@ -154,5 +182,3 @@ csv_to_pickle_to_sql(DIR_PATH, 'KernelVersions.csv', date_columns)
 #     'MedalAwardDate'
 # ]
 # csv_to_sql(csv_path, date_columns)
-
-
