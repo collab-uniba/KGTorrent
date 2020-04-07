@@ -1,17 +1,14 @@
 import os
 
-import pandas as pd
 from sqlalchemy import (MetaData, Table, Column, Integer, String, Float,
-                        DateTime, Boolean, ForeignKey, create_engine)
-
-from exceptions import (TableNotPreprocessedError)
+                        DateTime, Boolean, ForeignKey, create_engine, Text, BigInteger)
+from sqlalchemy.dialects.mysql import MEDIUMTEXT
 
 mysql_username = os.environ['MYSQL_USER']
 mysql_password = os.environ['MYSQL_PWD']
 
 # Before executing this script, execute in the mysql client the following command
 # CREATE DATABASE IF NOT EXISTS kaggle_torrent CHARACTER SET utf8mb4;
-
 
 engine = create_engine('mysql+pymysql://{}:{}@localhost:3306/kaggle_torrent'
                        '?charset=utf8mb4'.format(mysql_username, mysql_password), pool_recycle=3600)
@@ -26,14 +23,28 @@ users = Table('Users', metadata,
               Column('PerformanceTier', Integer(), nullable=False)
               )
 
+userAchievements = Table('UserAchievements', metadata,
+                         Column('Id', Integer(), primary_key=True),
+                         Column('UserId', Integer(), ForeignKey('Users.Id'), nullable=False),
+                         Column('AchievementType', String(255), nullable=False),
+                         Column('Tier', Integer(), nullable=False),
+                         Column('TierAchievementDate', DateTime()),
+                         Column('Points', Integer(), nullable=False),
+                         Column('CurrentRanking', Integer()),
+                         Column('HighestRanking', Integer()),
+                         Column('TotalGold', Integer(), nullable=False),
+                         Column('TotalSilver', Integer(), nullable=False),
+                         Column('TotalBronze', Integer(), nullable=False)
+                         )
+
 kernels = Table('Kernels', metadata,
                 Column('Id', Integer(), primary_key=True),
                 Column('AuthorUserId', Integer(), ForeignKey('Users.Id'), nullable=False),
                 Column('CurrentKernelVersionId', Integer(), ForeignKey('KernelVersions.Id')),
-                Column('ForkParentKernelVersionId', Integer(), ForeignKey('KernelVersions.Id')),
+                Column('ForkParentKernelVersionId', Integer()),  # ForeignKey('KernelVersions.Id') removed
                 # TODO: Set foreign key for the field "ForumTopicId"
                 Column('ForumTopicId', Integer()),
-                Column('FirstKernelVersionId', Integer(), ForeignKey('KernelVersions.Id')),
+                Column('FirstKernelVersionId', Integer()),  # ForeignKey('KernelVersions.Id') removed
                 Column('CreationDate', DateTime()),
                 Column('EvaluationDate', DateTime()),
                 Column('MadePublicDate', DateTime()),
@@ -77,108 +88,85 @@ kernelVersions = Table('KernelVersions', metadata,
                        )
 
 kernelVotes = Table('KernelVotes', metadata,
-                    Column('Id', Integer(), nullable=False),
+                    Column('Id', Integer(), primary_key=True),
                     Column('UserId', Integer(), nullable=False),
                     Column('KernelVersionId', Integer(), nullable=False),
                     Column('VoteDate', DateTime(), nullable=False)
                     )
 
+tags = Table('Tags', metadata,
+             Column('Id', Integer(), primary_key=True),
+             Column('ParentTagId', Integer()),  # Foreign key omitted
+             Column('Name', String(255), nullable=False),
+             Column('Slug', String(255), nullable=False),
+             Column('FullPath', String(255), nullable=False),
+             Column('Description', Text()),
+             Column('DatasetCount', Integer(), nullable=False),
+             Column('CompetitionCount', Integer(), nullable=False),
+             Column('KernelCount', Integer(), nullable=False)
+             )
+
+kernelTags = Table('KernelTags', metadata,
+                   Column('Id', Integer(), primary_key=True),
+                   Column('KernelId', Integer(), ForeignKey('Kernels.Id'), nullable=False),
+                   Column('TagId', Integer(), ForeignKey('Tags.Id'), nullable=False)
+                   )
+
+datasets = Table('Datasets', metadata,
+                 Column('Id', Integer(), primary_key=True),
+                 Column('CreatorUserId', Integer(), ForeignKey('Users.Id'), nullable=False),
+                 Column('OwnerUserId', Integer()),  # Foreign key omitted
+                 Column('OwnerOrganizationId', Integer()),  # Foreign key omitted
+                 # TODO: Add foreign key to CurrentDatasetVersion
+                 Column('CurrentDatasetVersionId', Integer()),
+                 Column('CurrentDatasourceVersionId', Integer()),  # Foreign key omitted
+                 Column('ForumId', Integer(), nullable=False),  # Foreign key omitted
+                 Column('Type', Integer(), nullable=False),
+                 Column('CreationDate', DateTime(), nullable=False),
+                 Column('ReviewDate', DateTime()),
+                 Column('FeatureDate', DateTime()),
+                 Column('LastActivityDate', DateTime(), nullable=False),
+                 Column('TotalViews', Integer(), nullable=False),
+                 Column('TotalDownloads', Integer(), nullable=False),
+                 Column('TotalVotes', Integer(), nullable=False),
+                 Column('TotalKernels', Integer(), nullable=False)
+                 )
+
+datasetTags = Table('DatasetTags', metadata,
+                    Column('Id', Integer(), primary_key=True),
+                    Column('DatasetId', Integer(), ForeignKey('Datasets.Id'), nullable=False),
+                    Column('TagId', Integer(), ForeignKey('Tags.Id'), nullable=False)
+                    )
+
+datasetVersions = Table('DatasetVersions', metadata,
+                        Column('Id', Integer(), primary_key=True),
+                        Column('DatasetId', Integer(), ForeignKey('Datasets.Id'), nullable=False),
+                        Column('DatasourceVersionId', Integer()),  # Foreign key omitted
+                        Column('CreatorUserId', Integer(), ForeignKey('Users.Id'), nullable=False),
+                        Column('LicenseName', String(255), nullable=False),
+                        Column('CreationDate', DateTime(), nullable=False),
+                        Column('VersionNumber', Integer()),
+                        Column('Title', String(255)),
+                        Column('Slug', String(255), nullable=False),
+                        Column('Subtitle', String(255)),
+                        Column('Description', MEDIUMTEXT),
+                        Column('VersionNotes', Text()),
+                        Column('TotalCompressedBytes', BigInteger()),
+                        Column('TotalUncompressedBytes', BigInteger())
+                        )
+
+datasetVotes = Table('DatasetVotes', metadata,
+                     Column('Id', Integer(), primary_key=True),
+                     Column('UserId', Integer(), ForeignKey('Users.Id'), nullable=False),
+                     Column('DatasetVersionId', Integer(), ForeignKey('DatasetVersions.Id'), nullable=False),
+                     Column('VoteDate', DateTime(), nullable=False)
+                     )
+
+kernelVersionDatasetSources = Table('KernelVersionDatasetSources', metadata,
+                                    Column('Id', Integer(), primary_key=True),
+                                    Column('KernelVersionId', Integer(), ForeignKey('KernelVersions.Id'),
+                                           nullable=False),
+                                    Column('SourceDatasetVersionId', ForeignKey('DatasetVersions.Id'), nullable=False)
+                                    )
+
 metadata.create_all(engine)
-
-
-# Procedure to map csv files to db tables
-def csv_to_sql(csv_path, date_columns):
-    file_name = os.path.basename(csv_path)
-    print('Reading "{}"...'.format(file_name))
-    df = pd.read_csv(csv_path)
-
-    if len(date_columns) > 0:
-        print('Pre-processing "{}"...'.format(file_name))
-        df[date_columns] = df[date_columns].apply(pd.to_datetime)
-
-    print('Writing "{}"...'.format(file_name))
-    df.to_sql(file_name[:-4], engine, if_exists='append', index=False)
-    print('"{}" written to database.\n'.format(file_name))
-
-
-def read_data(dir_path, file_name):
-    full_path = os.path.join(dir_path, file_name)
-    pickle_path = os.path.join(dir_path, '{}.bz2'.format(file_name[:-4]))
-
-    print('Reading "{}"...'.format(file_name))
-    if os.path.isfile(pickle_path):
-        preprocessed = True
-        df = pd.read_pickle(pickle_path)
-    else:
-        df = pd.read_csv(full_path)
-        preprocessed = False
-    return df, preprocessed
-
-
-# Procedure to map csv files to db tables
-def csv_to_pickle_to_sql(dir_path, file_name, date_columns=[], referenced_tables=None):
-    pickle_path = os.path.join(dir_path, '{}.bz2'.format(file_name[:-4]))
-
-    df, preprocessed = read_data(dir_path, file_name)
-
-    if not preprocessed and ((len(date_columns) > 0) or referenced_tables is not None):
-        print('Pre-processing "{}"...'.format(file_name))
-        if len(date_columns) > 0:
-            print('\t- Convert the date format...')
-            df[date_columns] = df[date_columns].apply(pd.to_datetime)
-        if referenced_tables is not None:
-            print('\t- Clean the table for referential integrity...')
-            for referenced_table in referenced_tables:
-                rt, prep = read_data(dir_path, referenced_table)
-                if not prep:
-                    raise TableNotPreprocessedError('Table "{}" must be preprocessed.'
-                                                    'Import it before "{}"'.format(referenced_table,
-                                                                                   file_name))
-                print('\t\tOriginal shape: {}.'.format(df.shape))
-                for fk in referenced_tables[referenced_table]:
-                    print('\t\tJoining "{}"...'.format(referenced_table))
-                    join = pd.merge(df, rt, left_on=fk, right_on='Id')
-                    df = df[df[fk].isin(join['Id_y'])]
-                    print('\t\tNew shape: {}.'.format(df.shape))
-
-        print('Serializing "{}"...'.format(file_name))
-        df.to_pickle(pickle_path)
-
-    print('Writing "{}"...'.format(file_name))
-    df.to_sql(file_name[:-4], engine, if_exists='append', index=False)
-    print('"{}" written to database.\n'.format(file_name))
-
-
-DIR_PATH = '/Users/luigiquaranta/Downloads/meta-kaggle'
-
-# Users.csv
-date_columns = ['RegisterDate']
-csv_to_pickle_to_sql(DIR_PATH, 'Users.csv', date_columns)
-
-# KernelLanguages.csv
-csv_to_pickle_to_sql(DIR_PATH, 'KernelLanguages.csv')
-
-# KernelVersions.csv
-date_columns = [
-    'CreationDate',
-    'EvaluationDate'
-]
-referenced_tables = {
-    'Users.csv': [
-        'AuthorUserId'
-    ],
-    'KernelLanguages.csv': [
-        'ScriptLanguageId'
-    ]
-}
-csv_to_pickle_to_sql(DIR_PATH, 'KernelVersions.csv', date_columns, referenced_tables)
-
-# # Kernels.csv
-# csv_path = '~/Downloads/meta-kaggle/Kernels.csv'
-# date_columns = [
-#     'CreationDate',
-#     'EvaluationDate',
-#     'MadePublicDate',
-#     'MedalAwardDate'
-# ]
-# csv_to_sql(csv_path, date_columns)
