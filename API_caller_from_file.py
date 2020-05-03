@@ -1,15 +1,16 @@
-from kaggle.rest import ApiException
-from kaggle.api.kaggle_api_extended import KaggleApi
-from tqdm import tqdm
+import argparse
 import logging
 import os
 import sys
-import argparse
 from pathlib import Path
+
+from kaggle.api.kaggle_api_extended import KaggleApi
+from kaggle.rest import ApiException
+from tqdm import tqdm
 
 parser = argparse.ArgumentParser()
 parser.add_argument('slug_file',
-                    help='Path to the file containing the Kaggle.com slugs which point to the desired kernels.',
+                    help='Path to the file containing the Kaggle.com slugs.',
                     type=str)
 parser.add_argument('-o', '--output_folder',
                     help='The path to the destination folder, where pulled kernels are supposed to be saved.',
