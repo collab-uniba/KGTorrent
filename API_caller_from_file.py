@@ -2,6 +2,7 @@ import argparse
 import logging
 import os
 import sys
+import time
 from pathlib import Path
 
 from kaggle.api.kaggle_api_extended import KaggleApi
@@ -42,6 +43,8 @@ with open(URL_FILE_PATH, 'r') as f:
     slugs = f.read().splitlines()
     slugs_pbar = tqdm(slugs, desc='Progress')
 
+    start_time = time.time()
+
     for slug in slugs_pbar:
         logging.info(f'Pulling: "{slug}"')
         try:
@@ -52,8 +55,10 @@ with open(URL_FILE_PATH, 'r') as f:
             failed += 1
             continue
 
+    end_time = time.time()
+
 consoleHandler = logging.StreamHandler(sys.stdout)
 logging.getLogger().addHandler(consoleHandler)
-logging.info('Download completed:\n'
+logging.info(f'Download completed in {round(end_time - start_time, 2):,} seconds:\n'
              f'\t- {successful} successful\n'
              f'\t- {failed} failed')
