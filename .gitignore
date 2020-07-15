@@ -1,6 +1,18 @@
 # Custom ignores
 .idea/
 
+logs/*
+!logs/.touch
+
+urls_files/*
+!urls_files/.touch
+
+output_files/*
+!output_files/.touch
+
+slug_files/*
+!slug_files/.touch
+
 # Created by https://www.gitignore.io/api/macos,python,pycharm,jupyternotebooks,visualstudiocode
 # Edit at https://www.gitignore.io/?templates=macos,python,pycharm,jupyternotebooks,visualstudiocode
 
