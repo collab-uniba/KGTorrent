@@ -25,10 +25,10 @@ from tqdm import tqdm
 # VARIABLES
 
 # csv file with notebooks info (slug, url)
-URLs_FILE = Path('./urls_files/Notebooks by experts - full download URLs.csv')
+URLs_FILE = Path('./urls_files/NotebooksByExperts-fullDownloadURLs.csv')
 
 # dest folder for downloaded notebooks
-DEST_FOLDER = Path(os.path.expanduser('~/Downloads/kaggle_notebooks/'))
+DEST_FOLDER = Path(os.path.expanduser('/mnt/ext_hdd/local_repositories/kaggle_notebooks/kaggle_experienced_retrospective/'))
 
 # dest folder for log files
 LOG_DEST_FOLDER = Path('./logs/')
