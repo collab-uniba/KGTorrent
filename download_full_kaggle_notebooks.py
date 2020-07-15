@@ -81,7 +81,7 @@ for row in tqdm(df.itertuples(), total=total_rows):
     logging.info(f'Downloaded {row.slug}')
 
     # Wait a bit to avoid a potential IP banning
-    time.sleep(4)
+    time.sleep(3)
 
 # Save df with download_paths to file
 df.to_csv(OUTPUT_DEST_FOLDER / f'notebook_download_paths_{time.time()}.csv', index=False, sep=';')
