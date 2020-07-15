@@ -1,6 +1,9 @@
 # Custom ignores
 .idea/
 
+notebook_output/*
+!notebook_output/.touch
+
 logs/*
 !logs/.touch
 
