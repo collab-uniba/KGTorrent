@@ -1,0 +1,11 @@
+name: KaggleTorrent
+channels:
+  - defaults
+dependencies:
+  - python=3.7
+  - sqlalchemy
+  - pymysql
+  - pandas
+  - jupyter
+prefix: /opt/anaconda3/envs/KaggleTorrent
+
