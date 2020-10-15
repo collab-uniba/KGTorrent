@@ -23,7 +23,7 @@ slug_files/*
 # gitignore template for Jupyter Notebooks
 # website: http://jupyter.org/
 
-.ipynb_checkpoints
+examples/.ipynb_checkpoints
 */.ipynb_checkpoints/*
 
 # IPython
