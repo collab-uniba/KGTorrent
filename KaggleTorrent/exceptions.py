@@ -1,12 +1,7 @@
-"""
-Exceptions module
-
-This module contains the definitions of exceptions that might be risen while building/updating the KaggleTorrent.
-"""
-
+"""This module defines exceptions that might be risen while building/updating KaggleTorrent using this package."""
 
 class Error(Exception):
-    """Base class for exceptions in this module."""
+    """Base class for exceptions in this package."""
     pass
 
 
@@ -15,7 +10,7 @@ class TableNotPreprocessedError(Error):
     (and serialized to .bz2 pickle file) but is not.
 
     Attributes:
-        message -- explanation of the error
+        message (str): short message containing the explanation of the error.
     """
 
     def __init__(self, message):
