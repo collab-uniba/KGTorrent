@@ -1,3 +1,5 @@
+"""This is a module to build the db schema."""
+
 import os
 
 from sqlalchemy import (MetaData, Table, Column, Integer, String, Float,
