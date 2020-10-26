@@ -17,7 +17,7 @@ def main():
     print("Connected to the database")
 
     # Build the database schema
-    build_db_schema.build_db_schema(
+    db_schema = build_db_schema.DbSchema(
         sqlalchemy_engine=db_engine
     )
     print("Database schema built")
@@ -30,6 +30,8 @@ def main():
     print("Database populated with MetaKaggle data")
 
     # Download the notebooks and update the db with their local path
+    # To get a specific subset of notebooks, query the database by using
+    # the db_schema object as needed.
     print("Notebooks download started")
     # TODO: create a class to handle notebooks download and related db updates
     print("Notebooks download completed")
