@@ -12,7 +12,7 @@ Submodules
 KaggleTorrent.buildDbSchema module
 ----------------------------------
 
-.. automodule:: KaggleTorrent.buildDbSchema
+.. automodule:: KaggleTorrent.build_db_schema
    :members:
    :undoc-members:
    :show-inheritance:
@@ -28,7 +28,7 @@ KaggleTorrent.exceptions module
 KaggleTorrent.populateDb module
 -------------------------------
 
-.. automodule:: KaggleTorrent.populateDb
+.. automodule:: KaggleTorrent.populate_db_with_metakaggle_data
    :members:
    :undoc-members:
    :show-inheritance:
