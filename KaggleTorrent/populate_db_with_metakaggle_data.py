@@ -75,7 +75,7 @@ def __read_data(meta_kaggle_path, file_name):
     return df, preprocessed
 
 
-def __csv_to_sql(meta_kaggle_path, file_name, sqlalchemy_engine, date_columns=None, referenced_tables=None):
+def __csv_to_sql(meta_kaggle_path, file_name, sqlalchemy_engine, date_columns=True, referenced_tables=None):
     """
 
     Args:
@@ -94,14 +94,16 @@ def __csv_to_sql(meta_kaggle_path, file_name, sqlalchemy_engine, date_columns=No
         df, preprocessed = __read_data(meta_kaggle_path, file_name)
 
         # If the table is being read for the first time and needs preprocessing...
-        if not preprocessed and ((len(date_columns) > 0) or referenced_tables is not None):
+        if not preprocessed and (date_columns or referenced_tables is not None):
 
             print('Pre-processing "{}"...'.format(file_name))
 
             # Date columns parsing
-            if date_columns is not None:
-                print('\t- Parsing date columns...')
-                df[date_columns] = df[date_columns].apply(pd.to_datetime)
+            print('\t- Parsing date columns...')
+            for column in df.columns:
+                if column.endswith("Date"):
+                    dates = {date: pd.to_datetime(date, format=None) for date in df[column].unique()}
+                    df[column] = df[column].map(dates)
 
             # Restricting rows so that referential integrity holds
             if referenced_tables is not None:
@@ -136,11 +138,17 @@ def __csv_to_sql(meta_kaggle_path, file_name, sqlalchemy_engine, date_columns=No
 
         # Write data to the corresponding database table
         print('Writing "{}"...'.format(file_name))
-        df.to_sql(file_name[:-4], sqlalchemy_engine, if_exists='append', index=False)
+        df.to_sql(file_name[:-4].lower(), sqlalchemy_engine, if_exists='append', index=False)
         print('"{}" written to database.\n'.format(file_name))
 
     else:
         # TODO: maybe an exception should be raised here if the database table is found to have been already populated
+        # TODO : trovare il modo di aggiornare le tuple quando la table è già piena
+        #  (altrimenti da errore di integrità con 'append' perchè la primary key viene reinserita
+        #  e da errore con 'replace' per via dei vincoli di integrità di altre tabelle che fanno riferimento a quella attuale)
+        #  NB : in mysql 'INSERT ... ON DUPLICATE KEY [INGORE, UPDATE]' per evitare questo problema.
+        #  Su SQLAlchemy suggeriscono di usare il merge per ovviare al problema (https://stackoverflow.com/questions/6611563/sqlalchemy-on-duplicate-key-update)
+        #  Un'altra soluzione è quella di fare 'DROP DATABASE IF EXISTS kaggle_torrent' e successivamente ricrearlo vuoto
         print('Table "{}" already filled.'.format(file_name[:-4]))
 
 
@@ -158,10 +166,9 @@ def populate_db(sqlalchemy_engine, meta_kaggle_path):
     print("DB POPULATION STARTED...\n")
 
     # USERS
-    date_cols = ['RegisterDate']
-    __csv_to_sql(meta_kaggle_path, 'Users.csv', sqlalchemy_engine,
-                 date_columns=date_cols)
-
+    __csv_to_sql(meta_kaggle_path, 'Users.csv', sqlalchemy_engine)
+    """
+    # TODO : eliminare date_cols dopo aver automatizzato il riconoscimento dei campi di tipo data
     # USER ACHIEVEMENTS
     date_cols = [
         'TierAchievementDate'
@@ -322,9 +329,8 @@ def populate_db(sqlalchemy_engine, meta_kaggle_path):
     }
     __csv_to_sql(meta_kaggle_path, 'KernelVersionDatasetSources.csv', sqlalchemy_engine,
                  referenced_tables=ref_tables)
-
+    """
     print("DB POPULATION COMPLETED")
-
 
 if __name__ == "__main__":
     # Create DB engine
