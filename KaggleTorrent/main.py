@@ -38,4 +38,8 @@ def main():
 
 
 if __name__ == '__main__':
+    import time
+
+    start_time = time.time()
     main()
+    print("--- %s minutes ---" % ((time.time() - start_time)/60))
