@@ -138,7 +138,12 @@ def __csv_to_sql(meta_kaggle_path, file_name, sqlalchemy_engine, date_columns=Tr
 
         # Write data to the corresponding database table
         print('Writing "{}"...'.format(file_name))
-        df.to_sql(file_name[:-4].lower(), sqlalchemy_engine, if_exists='append', index=False)
+        df.to_sql(file_name[:-4].lower(),
+                  sqlalchemy_engine,
+                  if_exists='append',
+                  index=False,
+                  # method='multi', # Does not improve performances
+                  chunksize=10000)
         print('"{}" written to database.\n'.format(file_name))
 
     else:
