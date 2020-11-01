@@ -145,7 +145,7 @@ def __csv_to_sql(meta_kaggle_path, file_name, sqlalchemy_engine, date_columns=Tr
                   # method='multi', # Does not improve performances
                   chunksize=10000)
         print('"{}" written to database.\n'.format(file_name))
-
+        
     else:
         # TODO: maybe an exception should be raised here if the database table is found to have been already populated
         # TODO : trovare il modo di aggiornare le tuple quando la table è già piena
@@ -172,29 +172,20 @@ def populate_db(sqlalchemy_engine, meta_kaggle_path):
 
     # USERS
     __csv_to_sql(meta_kaggle_path, 'Users.csv', sqlalchemy_engine)
-    """
-    # TODO : eliminare date_cols dopo aver automatizzato il riconoscimento dei campi di tipo data
+
     # USER ACHIEVEMENTS
-    date_cols = [
-        'TierAchievementDate'
-    ]
     ref_tables = {
         'Users.csv': [
             'UserId'
         ]
     }
     __csv_to_sql(meta_kaggle_path, 'UserAchievements.csv', sqlalchemy_engine,
-                 date_columns=date_cols,
                  referenced_tables=ref_tables)
 
     # KERNEL LANGUAGES
     __csv_to_sql(meta_kaggle_path, 'KernelLanguages.csv', sqlalchemy_engine)
 
     # KERNEL VERSIONS
-    date_cols = [
-        'CreationDate',
-        'EvaluationDate'
-    ]
     ref_tables = {
         'Users.csv': [
             'AuthorUserId'
@@ -207,16 +198,9 @@ def populate_db(sqlalchemy_engine, meta_kaggle_path):
         ]
     }
     __csv_to_sql(meta_kaggle_path, 'KernelVersions.csv', sqlalchemy_engine,
-                 date_columns=date_cols,
                  referenced_tables=ref_tables)
 
     # KERNELS
-    date_cols = [
-        'CreationDate',
-        'EvaluationDate',
-        'MadePublicDate',
-        'MedalAwardDate'
-    ]
     ref_tables = {
         'Users.csv': [
             'AuthorUserId'
@@ -226,13 +210,9 @@ def populate_db(sqlalchemy_engine, meta_kaggle_path):
         ]
     }
     __csv_to_sql(meta_kaggle_path, 'Kernels.csv', sqlalchemy_engine,
-                 date_columns=date_cols,
                  referenced_tables=ref_tables)
 
     # KERNEL VOTES
-    date_cols = [
-        'VoteDate'
-    ]
     ref_tables = {
         'Users.csv': [
             'UserId'
@@ -242,7 +222,6 @@ def populate_db(sqlalchemy_engine, meta_kaggle_path):
         ]
     }
     __csv_to_sql(meta_kaggle_path, 'KernelVotes.csv', sqlalchemy_engine,
-                 date_columns=date_cols,
                  referenced_tables=ref_tables)
 
     # TAGS
@@ -261,12 +240,6 @@ def populate_db(sqlalchemy_engine, meta_kaggle_path):
                  referenced_tables=ref_tables)
 
     # DATASETS
-    date_cols = [
-        'CreationDate',
-        'ReviewDate',
-        'FeatureDate',
-        'LastActivityDate'
-    ]
     ref_tables = {
         'Users.csv': [
             'CreatorUserId'
@@ -276,13 +249,9 @@ def populate_db(sqlalchemy_engine, meta_kaggle_path):
         # ]
     }
     __csv_to_sql(meta_kaggle_path, 'Datasets.csv', sqlalchemy_engine,
-                 date_columns=date_cols,
                  referenced_tables=ref_tables)
 
     # DATASET VERSIONS.CSV
-    date_cols = [
-        'CreationDate'
-    ]
     ref_tables = {
         'Users.csv': [
             'CreatorUserId'
@@ -292,7 +261,6 @@ def populate_db(sqlalchemy_engine, meta_kaggle_path):
         ]
     }
     __csv_to_sql(meta_kaggle_path, 'DatasetVersions.csv', sqlalchemy_engine,
-                 date_columns=date_cols,
                  referenced_tables=ref_tables)
 
     # DATASET TAGS
@@ -308,9 +276,6 @@ def populate_db(sqlalchemy_engine, meta_kaggle_path):
                  referenced_tables=ref_tables)
 
     # DATASET VOTES
-    date_cols = [
-        'VoteDate'
-    ]
     ref_tables = {
         'Users.csv': [
             'UserId'
@@ -320,7 +285,6 @@ def populate_db(sqlalchemy_engine, meta_kaggle_path):
         ]
     }
     __csv_to_sql(meta_kaggle_path, 'DatasetVotes.csv', sqlalchemy_engine,
-                 date_columns=date_cols,
                  referenced_tables=ref_tables)
 
     # KERNEL VERSION - DATASET SOURCES
@@ -334,7 +298,7 @@ def populate_db(sqlalchemy_engine, meta_kaggle_path):
     }
     __csv_to_sql(meta_kaggle_path, 'KernelVersionDatasetSources.csv', sqlalchemy_engine,
                  referenced_tables=ref_tables)
-    """
+
     print("DB POPULATION COMPLETED")
 
 if __name__ == "__main__":
