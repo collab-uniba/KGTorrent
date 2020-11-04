@@ -9,7 +9,6 @@ import pandas as pd
 
 import KaggleTorrent.config as config
 from KaggleTorrent.db_connection_handler import DbConnectionHandler
-from KaggleTorrent.exceptions import TableNotPreprocessedError
 
 
 # PRIVATE UTILITY FUNCTIONS
@@ -75,7 +74,7 @@ def __read_data(meta_kaggle_path, file_name):
     return df, preprocessed
 
 
-def __csv_to_sql(meta_kaggle_path, file_name, sqlalchemy_engine, date_columns=True, referenced_tables=None):
+def __csv_to_sql(meta_kaggle_path, file_name, sqlalchemy_engine, referenced_tables=None):
     """
 
     Args:
@@ -91,17 +90,22 @@ def __csv_to_sql(meta_kaggle_path, file_name, sqlalchemy_engine, date_columns=Tr
     if __check_table_emptiness(table_name=file_name[:-4],
                                engine=sqlalchemy_engine):
 
-        df, preprocessed = __read_data(meta_kaggle_path, file_name)
+        full_path = os.path.join(meta_kaggle_path, file_name)
+        print('Reading "{}"...'.format(file_name))
+        df = pd.read_csv(full_path)
+
+        date_columns = [column for column in df.columns if column.endswith('Date')]
 
         # If the table is being read for the first time and needs preprocessing...
-        if not preprocessed and (date_columns or referenced_tables is not None):
+        if len(date_columns) != 0 or referenced_tables is not None:
 
             print('Pre-processing "{}"...'.format(file_name))
 
             # Date columns parsing
-            print('\t- Parsing date columns...')
-            for column in df.columns:
-                if column.endswith("Date"):
+            if len(date_columns) != 0:
+                print('\t- Parsing date columns...')
+                for column in date_columns:
+                    # TODO: pd.to_datetime has still to convert the same dates many times
                     dates = {date: pd.to_datetime(date, format=None) for date in df[column].unique()}
                     df[column] = df[column].map(dates)
 
@@ -110,14 +114,9 @@ def __csv_to_sql(meta_kaggle_path, file_name, sqlalchemy_engine, date_columns=Tr
                 print('\t- Checking the table for referential integrity...')
 
                 for referenced_table in referenced_tables:
-                    rt, prep = __read_data(meta_kaggle_path, referenced_table)
 
-                    # The table against which we want to check the foreign key should have already been preprocessed
-                    # Rise an error otherwise
-                    if not prep:
-                        raise TableNotPreprocessedError('Table "{}" should have already been preprocessed at this time.'
-                                                        'Try importing it before "{}"'.format(referenced_table,
-                                                                                              file_name))
+                    full_ref_table_path = os.path.join(meta_kaggle_path, referenced_table)
+                    rt = pd.read_csv(full_ref_table_path)
 
                     # Take notes on the original table cardinality to estimate the data loss involved in the merge.
                     print('\t\tOriginal shape: {}.'.format(df.shape))
@@ -126,15 +125,11 @@ def __csv_to_sql(meta_kaggle_path, file_name, sqlalchemy_engine, date_columns=Tr
                     # TODO: Check the correctness of this operation (maybe write a test here)
                     for fk in referenced_tables[referenced_table]:
                         print('\t\tJoining "{}"...'.format(referenced_table))
-                        join = pd.merge(df, rt, left_on=fk, right_on='Id')
-                        df = df[df[fk].isin(join['Id_y'])]
+                        # join = pd.merge(df, rt, left_on=fk, right_on='Id')
+                        # df = df[df[fk].isin(join['Id_y'])]
+                        df = df[df[fk].isin(rt['Id'])]
                         # Take notes on the new table cardinality to estimate the data loss involved in the merge.
                         print('\t\tNew shape: {}.'.format(df.shape))
-
-            # Serialize the resulting dataframe object
-            print('Serializing "{}"...'.format(file_name))
-            pickle_path = os.path.join(meta_kaggle_path, '{}.bz2'.format(file_name[:-4]))
-            df.to_pickle(pickle_path)
 
         # Write data to the corresponding database table
         print('Writing "{}"...'.format(file_name))
@@ -142,17 +137,16 @@ def __csv_to_sql(meta_kaggle_path, file_name, sqlalchemy_engine, date_columns=Tr
                   sqlalchemy_engine,
                   if_exists='append',
                   index=False,
-                  # method='multi', # Does not improve performances
                   chunksize=10000)
         print('"{}" written to database.\n'.format(file_name))
         
     else:
-        # TODO: maybe an exception should be raised here if the database table is found to have been already populated
         # TODO : trovare il modo di aggiornare le tuple quando la table è già piena
         #  (altrimenti da errore di integrità con 'append' perchè la primary key viene reinserita
         #  e da errore con 'replace' per via dei vincoli di integrità di altre tabelle che fanno riferimento a quella attuale)
         #  NB : in mysql 'INSERT ... ON DUPLICATE KEY [INGORE, UPDATE]' per evitare questo problema.
-        #  Su SQLAlchemy suggeriscono di usare il merge per ovviare al problema (https://stackoverflow.com/questions/6611563/sqlalchemy-on-duplicate-key-update)
+        #  Su SQLAlchemy suggeriscono di usare il merge per ovviare al problema
+        #  (https://stackoverflow.com/questions/6611563/sqlalchemy-on-duplicate-key-update)
         #  Un'altra soluzione è quella di fare 'DROP DATABASE IF EXISTS kaggle_torrent' e successivamente ricrearlo vuoto
         print('Table "{}" already filled.'.format(file_name[:-4]))
 
@@ -212,92 +206,92 @@ def populate_db(sqlalchemy_engine, meta_kaggle_path):
     __csv_to_sql(meta_kaggle_path, 'Kernels.csv', sqlalchemy_engine,
                  referenced_tables=ref_tables)
 
-    # KERNEL VOTES
-    ref_tables = {
-        'Users.csv': [
-            'UserId'
-        ],
-        'KernelVersions.csv': [
-            'KernelVersionId'
-        ]
-    }
-    __csv_to_sql(meta_kaggle_path, 'KernelVotes.csv', sqlalchemy_engine,
-                 referenced_tables=ref_tables)
-
-    # TAGS
-    __csv_to_sql(meta_kaggle_path, 'Tags.csv', sqlalchemy_engine)
-
-    # KERNEL TAGS
-    ref_tables = {
-        'Tags.csv': [
-            'TagId'
-        ],
-        'Kernels.csv': [
-            'KernelId'
-        ]
-    }
-    __csv_to_sql(meta_kaggle_path, 'KernelTags.csv', sqlalchemy_engine,
-                 referenced_tables=ref_tables)
-
-    # DATASETS
-    ref_tables = {
-        'Users.csv': [
-            'CreatorUserId'
-        ],
-        # 'DatasetVersions.csv': [
-        #     'CurrentDatasetVersionId'
-        # ]
-    }
-    __csv_to_sql(meta_kaggle_path, 'Datasets.csv', sqlalchemy_engine,
-                 referenced_tables=ref_tables)
-
-    # DATASET VERSIONS.CSV
-    ref_tables = {
-        'Users.csv': [
-            'CreatorUserId'
-        ],
-        'Datasets.csv': [
-            'DatasetId'
-        ]
-    }
-    __csv_to_sql(meta_kaggle_path, 'DatasetVersions.csv', sqlalchemy_engine,
-                 referenced_tables=ref_tables)
-
-    # DATASET TAGS
-    ref_tables = {
-        'Tags.csv': [
-            'TagId'
-        ],
-        'Datasets.csv': [
-            'DatasetId'
-        ]
-    }
-    __csv_to_sql(meta_kaggle_path, 'DatasetTags.csv', sqlalchemy_engine,
-                 referenced_tables=ref_tables)
-
-    # DATASET VOTES
-    ref_tables = {
-        'Users.csv': [
-            'UserId'
-        ],
-        'DatasetVersions.csv': [
-            'DatasetVersionId'
-        ]
-    }
-    __csv_to_sql(meta_kaggle_path, 'DatasetVotes.csv', sqlalchemy_engine,
-                 referenced_tables=ref_tables)
-
-    # KERNEL VERSION - DATASET SOURCES
-    ref_tables = {
-        'KernelVersions.csv': [
-            'KernelVersionId'
-        ],
-        'DatasetVersions.csv': [
-            'SourceDatasetVersionId'
-        ]
-    }
-    __csv_to_sql(meta_kaggle_path, 'KernelVersionDatasetSources.csv', sqlalchemy_engine,
-                 referenced_tables=ref_tables)
+    # # KERNEL VOTES
+    # ref_tables = {
+    #     'Users.csv': [
+    #         'UserId'
+    #     ],
+    #     'KernelVersions.csv': [
+    #         'KernelVersionId'
+    #     ]
+    # }
+    # __csv_to_sql(meta_kaggle_path, 'KernelVotes.csv', sqlalchemy_engine,
+    #              referenced_tables=ref_tables)
+    #
+    # # TAGS
+    # __csv_to_sql(meta_kaggle_path, 'Tags.csv', sqlalchemy_engine)
+    #
+    # # KERNEL TAGS
+    # ref_tables = {
+    #     'Tags.csv': [
+    #         'TagId'
+    #     ],
+    #     'Kernels.csv': [
+    #         'KernelId'
+    #     ]
+    # }
+    # __csv_to_sql(meta_kaggle_path, 'KernelTags.csv', sqlalchemy_engine,
+    #              referenced_tables=ref_tables)
+    #
+    # # DATASETS
+    # ref_tables = {
+    #     'Users.csv': [
+    #         'CreatorUserId'
+    #     ],
+    #     # 'DatasetVersions.csv': [
+    #     #     'CurrentDatasetVersionId'
+    #     # ]
+    # }
+    # __csv_to_sql(meta_kaggle_path, 'Datasets.csv', sqlalchemy_engine,
+    #              referenced_tables=ref_tables)
+    #
+    # # DATASET VERSIONS.CSV
+    # ref_tables = {
+    #     'Users.csv': [
+    #         'CreatorUserId'
+    #     ],
+    #     'Datasets.csv': [
+    #         'DatasetId'
+    #     ]
+    # }
+    # __csv_to_sql(meta_kaggle_path, 'DatasetVersions.csv', sqlalchemy_engine,
+    #              referenced_tables=ref_tables)
+    #
+    # # DATASET TAGS
+    # ref_tables = {
+    #     'Tags.csv': [
+    #         'TagId'
+    #     ],
+    #     'Datasets.csv': [
+    #         'DatasetId'
+    #     ]
+    # }
+    # __csv_to_sql(meta_kaggle_path, 'DatasetTags.csv', sqlalchemy_engine,
+    #              referenced_tables=ref_tables)
+    #
+    # # DATASET VOTES
+    # ref_tables = {
+    #     'Users.csv': [
+    #         'UserId'
+    #     ],
+    #     'DatasetVersions.csv': [
+    #         'DatasetVersionId'
+    #     ]
+    # }
+    # __csv_to_sql(meta_kaggle_path, 'DatasetVotes.csv', sqlalchemy_engine,
+    #              referenced_tables=ref_tables)
+    #
+    # # KERNEL VERSION - DATASET SOURCES
+    # ref_tables = {
+    #     'KernelVersions.csv': [
+    #         'KernelVersionId'
+    #     ],
+    #     'DatasetVersions.csv': [
+    #         'SourceDatasetVersionId'
+    #     ]
+    # }
+    # __csv_to_sql(meta_kaggle_path, 'KernelVersionDatasetSources.csv', sqlalchemy_engine,
+    #              referenced_tables=ref_tables)
 
     print("DB POPULATION COMPLETED")
 
