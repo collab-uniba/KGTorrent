@@ -14,4 +14,5 @@ db_password = os.environ['MYSQL_PWD']
 
 # Paths
 meta_kaggle_path = os.environ['METAKAGGLE_PATH']
+constraints_file_path = os.environ['CONSTRAINTS_FILE_PATH']
 nb_archive_path = ''

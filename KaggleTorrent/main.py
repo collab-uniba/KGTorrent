@@ -23,10 +23,13 @@ def main():
     print("Database schema built")
 
     # Populate the database with notebook metadata
+    mk_preprocessor = populate_db_with_metakaggle_data.MetaKagglePreprocessor(
+        config.constraints_file_path,
+        meta_kaggle_path=config.meta_kaggle_path,
+        sqlalchemy_engine=db_engine)
     populate_db_with_metakaggle_data.populate_db(
-        sqlalchemy_engine=db_engine,
-        meta_kaggle_path=config.meta_kaggle_path
-    )
+        mk_preprocessor,
+        meta_kaggle_path=config.meta_kaggle_path)
     print("Database populated with MetaKaggle data")
 
     # Download the notebooks and update the db with their local path
