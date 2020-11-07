@@ -191,6 +191,10 @@ def populate_db(mk, meta_kaggle_path):
                                        (mk.constraints_df['Referenced Table'] == referenced_table) &
                                        (mk.constraints_df['Foreign Key'] == fk)), 'IsSolved'] = True
 
+        # Now I can write the referenced table to the db
+        mk.write_table_to_db(referenced_table)
+
+        for referencing_table in mk.referencing_tables_lists[referenced_table]:
             # If all foreing keys for the current referencing table are solved at this point,
             # then write the table to the db
             if all(mk.constraints_df.loc[(mk.constraints_df['Table'] == referencing_table), 'IsSolved']):
@@ -198,9 +202,6 @@ def populate_db(mk, meta_kaggle_path):
                 print(mk.constraints_df.loc[(mk.constraints_df[
                                                  'Table'] == referencing_table), 'IsSolved'])  # TODO: remove this print asap
                 mk.write_table_to_db(referencing_table)
-
-        # Now I can write the referenced table to the db
-        mk.write_table_to_db(referenced_table)
 
     # Final update of the stats table
     for _, row in mk.stats.iterrows():
