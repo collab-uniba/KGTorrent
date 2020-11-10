@@ -9,7 +9,7 @@ by running the following command in your MySQL client::
 """
 
 from sqlalchemy import (MetaData, Table, Column, Integer, String, Float,
-                        DateTime, Boolean, Text, BigInteger)
+                        DateTime, Boolean, ForeignKey, Text, BigInteger)
 from sqlalchemy.dialects.mysql import MEDIUMTEXT
 
 from KaggleTorrent.db_connection_handler import DbConnectionHandler
@@ -51,7 +51,7 @@ class DbSchema:
 
         self.user_achievements = Table('UserAchievements', metadata,
                                        Column('Id', Integer(), primary_key=True),
-                                       Column('UserId', Integer(), nullable=False),
+                                       Column('UserId', Integer(), ForeignKey('Users.Id'), nullable=False),
                                        Column('AchievementType', String(255), nullable=False),
                                        Column('Tier', Integer(), nullable=False),
                                        Column('TierAchievementDate', DateTime()),
@@ -65,11 +65,12 @@ class DbSchema:
 
         self.kernels = Table('Kernels', metadata,
                              Column('Id', Integer(), primary_key=True),
-                             Column('AuthorUserId', Integer(), nullable=False),
+                             Column('AuthorUserId', Integer(), ForeignKey('Users.Id'), nullable=False),
                              Column('CurrentKernelVersionId', Integer()),
-                             Column('ForkParentKernelVersionId', Integer()),
+                             Column('ForkParentKernelVersionId', Integer()),  # ForeignKey('KernelVersions.Id') removed
+                             # TODO: Set foreign key for the field "ForumTopicId"
                              Column('ForumTopicId', Integer()),
-                             Column('FirstKernelVersionId', Integer()),
+                             Column('FirstKernelVersionId', Integer()),  # ForeignKey('KernelVersions.Id') removed
                              Column('CreationDate', DateTime()),
                              Column('EvaluationDate', DateTime()),
                              Column('MadePublicDate', DateTime()),
@@ -91,10 +92,13 @@ class DbSchema:
 
         self.kernel_versions = Table('KernelVersions', metadata,
                                      Column('Id', Integer(), primary_key=True),
+                                     # TODO: reinsert FK Constraint ForeignKey("Kernels.Id") for "ScriptId"
                                      Column('ScriptId', Integer(), nullable=False),
                                      Column('ParentScriptVersionId', Integer()),
-                                     Column('ScriptLanguageId', Integer(), nullable=False),
-                                     Column('AuthorUserId', Integer(), nullable=False),
+                                     # ForeignKey("KernelVersions.Id") removed
+                                     Column('ScriptLanguageId', Integer(), ForeignKey('KernelLanguages.Id'),
+                                            nullable=False),
+                                     Column('AuthorUserId', Integer(), ForeignKey('Users.Id'), nullable=False),
                                      Column('CreationDate', DateTime(), nullable=False),
                                      Column('VersionNumber', Integer()),
                                      Column('Title', String(255)),
@@ -120,7 +124,7 @@ class DbSchema:
 
         self.tags = Table('Tags', metadata,
                           Column('Id', Integer(), primary_key=True),
-                          Column('ParentTagId', Integer()),
+                          Column('ParentTagId', Integer()),  # Foreign key omitted
                           Column('Name', String(255), nullable=False),
                           Column('Slug', String(255), nullable=False),
                           Column('FullPath', String(255), nullable=False),
@@ -132,18 +136,19 @@ class DbSchema:
 
         self.kernel_tags = Table('KernelTags', metadata,
                                  Column('Id', Integer(), primary_key=True),
-                                 Column('KernelId', Integer(), nullable=False),
-                                 Column('TagId', Integer(), nullable=False)
+                                 Column('KernelId', Integer(), ForeignKey('Kernels.Id'), nullable=False),
+                                 Column('TagId', Integer(), ForeignKey('Tags.Id'), nullable=False)
                                  )
 
         self.datasets = Table('Datasets', metadata,
                               Column('Id', Integer(), primary_key=True),
-                              Column('CreatorUserId', Integer(), nullable=False),
-                              Column('OwnerUserId', Integer()),
-                              Column('OwnerOrganizationId', Integer()),
+                              Column('CreatorUserId', Integer(), ForeignKey('Users.Id'), nullable=False),
+                              Column('OwnerUserId', Integer()),  # Foreign key omitted
+                              Column('OwnerOrganizationId', Integer()),  # Foreign key omitted
+                              # TODO: Add foreign key to CurrentDatasetVersion
                               Column('CurrentDatasetVersionId', Integer()),
-                              Column('CurrentDatasourceVersionId', Integer()),
-                              Column('ForumId', Integer(), nullable=False),
+                              Column('CurrentDatasourceVersionId', Integer()),  # Foreign key omitted
+                              Column('ForumId', Integer(), nullable=False),  # Foreign key omitted
                               Column('Type', Integer(), nullable=False),
                               Column('CreationDate', DateTime(), nullable=False),
                               Column('ReviewDate', DateTime()),
@@ -157,15 +162,15 @@ class DbSchema:
 
         self.dataset_tags = Table('DatasetTags', metadata,
                                   Column('Id', Integer(), primary_key=True),
-                                  Column('DatasetId', Integer(), nullable=False),
-                                  Column('TagId', Integer(), nullable=False)
+                                  Column('DatasetId', Integer(), ForeignKey('Datasets.Id'), nullable=False),
+                                  Column('TagId', Integer(), ForeignKey('Tags.Id'), nullable=False)
                                   )
 
         self.dataset_versions = Table('DatasetVersions', metadata,
                                       Column('Id', Integer(), primary_key=True),
-                                      Column('DatasetId', Integer(), nullable=False),
-                                      Column('DatasourceVersionId', Integer()),
-                                      Column('CreatorUserId', Integer(), nullable=False),
+                                      Column('DatasetId', Integer(), ForeignKey('Datasets.Id'), nullable=False),
+                                      Column('DatasourceVersionId', Integer()),  # Foreign key omitted
+                                      Column('CreatorUserId', Integer(), ForeignKey('Users.Id'), nullable=False),
                                       Column('LicenseName', String(255), nullable=False),
                                       Column('CreationDate', DateTime(), nullable=False),
                                       Column('VersionNumber', Integer()),
@@ -180,15 +185,19 @@ class DbSchema:
 
         self.dataset_votes = Table('DatasetVotes', metadata,
                                    Column('Id', Integer(), primary_key=True),
-                                   Column('UserId', Integer(), nullable=False),
-                                   Column('DatasetVersionId', Integer(), nullable=False),
+                                   Column('UserId', Integer(), ForeignKey('Users.Id'), nullable=False),
+                                   Column('DatasetVersionId', Integer(), ForeignKey('DatasetVersions.Id'),
+                                          nullable=False),
                                    Column('VoteDate', DateTime(), nullable=False)
                                    )
 
         self.kernel_version__dataset_sources = Table('KernelVersionDatasetSources', metadata,
                                                      Column('Id', Integer(), primary_key=True),
-                                                     Column('KernelVersionId', Integer(), nullable=False),
-                                                     Column('SourceDatasetVersionId', Integer(), nullable=False)
+                                                     Column('KernelVersionId', Integer(),
+                                                            ForeignKey('KernelVersions.Id'),
+                                                            nullable=False),
+                                                     Column('SourceDatasetVersionId', ForeignKey('DatasetVersions.Id'),
+                                                            nullable=False)
                                                      )
 
         # Create all tables added to the metadata object

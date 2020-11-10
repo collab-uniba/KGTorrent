@@ -16,6 +16,11 @@ def main():
     db_engine = db_connection_handler.create_sqlalchemy_engine()
     print("Connected to the database")
 
+    # Initialize the db
+    con = db_engine.connect()
+    con.execute('DROP DATABASE IF EXISTS kaggle_torrent;')
+    con.execute('CREATE DATABASE IF NOT EXISTS kaggle_torrent CHARACTER SET utf8mb4;')
+
     # Build the database schema
     db_schema = build_db_schema.DbSchema(
         sqlalchemy_engine=db_engine
@@ -30,6 +35,10 @@ def main():
     populate_db_with_metakaggle_data.populate_db(
         mk_preprocessor,
         meta_kaggle_path=config.meta_kaggle_path)
+    populate_db_with_metakaggle_data.set_foreign_keys(
+        sqlalchemy_engine=db_engine,
+        constraints_file_path=config.constraints_file_path)
+
     print("Database populated with MetaKaggle data")
 
     # Download the notebooks and update the db with their local path
