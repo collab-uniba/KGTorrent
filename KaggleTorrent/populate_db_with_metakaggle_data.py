@@ -66,6 +66,8 @@ class MetaKagglePreprocessor:
         self.constraints_df['IsSolved'] = False
         print(self.constraints_df)
 
+        self.already_visited = []
+
         # Series of lists indexed by referenced table names:
         # Each list stores all the tables referencing their index
         self.referencing_tables_lists = self.constraints_df.groupby(by='Referenced Table')['Table'].apply(list).iloc[
@@ -174,6 +176,23 @@ class MetaKagglePreprocessor:
 
         else:
             print('\t- Table already loaded.')
+
+    def get_referenced_list(self, table):
+        return self.constraints_df.loc[self.constraints_df['Table'] == table, 'Referenced Table'].values
+
+    def process_referencing_table(self, referencing):
+        referenced_list = self.get_referenced_list(referencing)
+
+        if len(referenced_list) == 0:
+            return referencing
+
+        else:
+            for referenced in referenced_list:
+                if referenced not in self.already_visited:
+                    r = self.process_referencing_table(referenced)
+                    self.already_visited.append(referenced)
+                referencing = self.clean_referencing(referencing, r)
+            return referencing
 
 
 def populate_db(mk, meta_kaggle_path):
