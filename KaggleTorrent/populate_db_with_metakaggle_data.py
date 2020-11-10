@@ -44,10 +44,10 @@ def set_foreign_keys(sqlalchemy_engine, constraints_file_path):
     for _, fk in constraints_df.iterrows():
         table_name = fk['Table'][:-4].lower()
         foreign_key = fk['Foreign Key']
-        referenced_table = fk['Referenced Table']
+        referenced_table = fk['Referenced Table'][:-4].lower()
         referenced_col = fk['Referenced Column']
 
-        con.execute(f'ALTER TABLE {table_name}'
+        con.execute(f'ALTER TABLE {table_name} '
                     f'ADD FOREIGN KEY ({foreign_key}) REFERENCES {referenced_table}({referenced_col});')
 
 
@@ -64,7 +64,6 @@ class MetaKagglePreprocessor:
         # (Referencing Table, Foreign Key, Referenced Table, Referenced Column)
         self.constraints_df = pd.read_excel(constraints_file_path)  # TODO: change to read_csv and read the file outside
         self.constraints_df['IsSolved'] = False
-        self.constraints_df['IsWritten'] = False
         print(self.constraints_df)
 
         # Series of lists indexed by referenced table names:
@@ -72,11 +71,16 @@ class MetaKagglePreprocessor:
         self.referencing_tables_lists = self.constraints_df.groupby(by='Referenced Table')['Table'].apply(list).iloc[
                                         ::-1]
 
+        self.waiting = {
+            'Referenced': [],
+            'Referencing': []
+        }
+
         # Dictionary of dataframes that need to be processed
         self.dataframes = {}
 
         # Dataframe containing info on row loss after referential integrity checks on referencing tables
-        self.stats = pd.DataFrame(columns=['Table', 'Initial#rows', 'Final#rows'])
+        self.stats = pd.DataFrame(columns=['Table', 'Initial#rows', 'Final#rows', 'Written'])
 
     def parse_dates(self, df):
         # TODO: document this method
@@ -89,6 +93,35 @@ class MetaKagglePreprocessor:
                 df[column] = pd.to_datetime(df[column], infer_datetime_format=True, cache=True)
 
         return df
+
+    def is_referencing_table_writable(self, referencing_table):
+        print(f"Evaluating the writability of REFERENCING TABLE {referencing_table}")
+        print(self.constraints_df[['Table', 'Referenced Table', 'IsSolved']])
+        print(self.stats[['Table', 'Written']])
+        print(not self.stats.loc[self.stats['Table'] == referencing_table, 'Written'].values[0])
+
+        return (not self.stats.loc[self.stats['Table'] == referencing_table, 'Written'].values[0]) and \
+               all(self.constraints_df.loc[
+                       (self.constraints_df['Table'] == referencing_table),
+                       'IsSolved'
+                   ]) and \
+               all(self.constraints_df.loc[
+                       (self.constraints_df['Table'] == referencing_table),
+                       'Referenced Table'
+                   ].isin(self.stats.loc[self.stats['Written'] == True, 'Table'])) and \
+               referencing_table not in self.constraints_df.loc[self.constraints_df['IsSolved'] == False,
+                                                                'Referenced Table'].values
+
+    def is_referenced_table_writable(self, referenced_table):
+        print(f"Evaluating the writability of REFERENCED TABLE {referenced_table}")
+        print(self.constraints_df[['Table', 'Referenced Table', 'IsSolved']])
+        print(self.stats[['Table', 'Written']])
+        print(not self.stats.loc[self.stats['Table'] == referenced_table, 'Written'].values[0])
+
+        return (not self.stats.loc[self.stats['Table'] == referenced_table, 'Written'].values[0]) and \
+               referenced_table not in self.constraints_df.loc[
+                   self.constraints_df['IsSolved'] == False, 'Table'
+               ].values
 
     def write_table_to_db(self, table_name, df=None):
         # TODO: document this method
@@ -109,7 +142,7 @@ class MetaKagglePreprocessor:
                   index=False,
                   chunksize=10000)
 
-        self.constraints_df.loc[self.constraints_df['Table'] == table_name, 'IsWritten'] = True
+        self.stats.loc[self.stats['Table'] == table_name, 'Written'] = True
         print('"{}" written to database.\n'.format(table_name))
 
         print('number of elements of self.dataframes before del:', len(self.dataframes))  # TODO: delete this print asap
@@ -133,7 +166,8 @@ class MetaKagglePreprocessor:
             new_stats_row = {
                 'Table': table_name,
                 'Initial#rows': self.dataframes[table_name].shape[0],
-                'Final#rows': None
+                'Final#rows': None,
+                'Written': False
             }
             self.stats = self.stats.append(new_stats_row, ignore_index=True)
             print('\t- Table loaded.')
@@ -198,32 +232,61 @@ def populate_db(mk, meta_kaggle_path):
                 # For each foreign key, I update the referencing table
                 # by removing rows that miss a corresponding row in the referenced table
                 print('\tUpdating the referencing table')
-                mk.dataframes[referencing_table] = mk.dataframes[referencing_table][mk.dataframes[referencing_table][fk]
-                    .isin(mk.dataframes[referenced_table][rc])]
+                mk.dataframes[referencing_table] = mk.dataframes[referencing_table][
+                    mk.dataframes[referencing_table][fk].isin(mk.dataframes[referenced_table][rc])
+                ]
 
                 # Then I mark the constraint as solved
                 mk.constraints_df.loc[((mk.constraints_df['Table'] == referencing_table) &
                                        (mk.constraints_df['Referenced Table'] == referenced_table) &
                                        (mk.constraints_df['Foreign Key'] == fk)), 'IsSolved'] = True
 
-        # Now I can write the referenced table to the db # TODO: remove this old comment
+            # If the referencing table is not a referencing table for another table
+            # or if its foreign keys have already been completely solved
+            # AND
+            # If all the tables referenced by this referencing table's foreign keys have been written to the db,
+            # AND
+            # If the referencing table does not play the role of a referenced keyboard
+            # THEN
+            # write the table to db
+            # print(f"Evaluating the writability of REFERENCING TABLE {referencing_table}")
+            # print(mk.constraints_df[['Table', 'Referenced Table', 'IsSolved']])
+            # print(mk.stats[['Table', 'Written']])
+            # if all(mk.constraints_df.loc[(mk.constraints_df['Table'] == referencing_table), 'IsSolved']) and \
+            #         all(mk.constraints_df.loc[
+            #                 (mk.constraints_df['Table'] == referencing_table),
+            #                 'Referenced Table'
+            #             ].isin(mk.stats.loc[mk.stats['Written'] == True, 'Table'])) and \
+            #         referencing_table not in mk.constraints_df.loc[mk.constraints_df['IsSolved'] == False,
+            #                                                        'Referenced Table'].values:
+            #     mk.write_table_to_db(referencing_table)
+
+            if mk.is_referencing_table_writable(referencing_table):
+                mk.write_table_to_db(referencing_table)
+
+                for referenced in mk.waiting['Referenced']:
+                    if mk.is_referenced_table_writable(referenced):
+                        mk.write_table_to_db(referenced)
+                        mk.waiting['Referenced'].remove(referenced)
+            else:
+                mk.waiting['Referencing'].append(referencing_table)
+
         # Now, if the referenced table does not play the role of a referencing table in another relationship,
         # I can write it to the db
-
-        if referenced_table not in mk.constraints_df.loc[mk.constraints_df['IsSolved'] == False, 'Table'].values:
-            print('Nothing else to solve for the current referenced table.')
-            print(mk.constraints_df[['Table', 'IsSolved', 'IsWritten']])  # TODO: remove this print
+        # print(f"Evaluating the writability of REFERENCED TABLE {referenced_table}")
+        # print(mk.constraints_df[['Table', 'Referenced Table', 'IsSolved']])
+        # print(mk.stats[['Table', 'Written']])
+        # if referenced_table not in mk.constraints_df.loc[mk.constraints_df['IsSolved'] == False, 'Table'].values:
+        #     mk.write_table_to_db(referenced_table)
+        if mk.is_referenced_table_writable(referenced_table):
             mk.write_table_to_db(referenced_table)
 
-        for referencing_table in mk.referencing_tables_lists[referenced_table]:
-            # If all foreign keys for the current referencing table are solved at this point,
-            # then write the table to the db
-            if all(mk.constraints_df.loc[(mk.constraints_df['Table'] == referencing_table), 'IsSolved']):
-                print(f'\tAll fk solved for "{referencing_table}"')
-                print(mk.constraints_df[['Table', 'IsSolved', 'IsWritten']])  # TODO: remove this print
-                print(mk.constraints_df.loc[(mk.constraints_df[
-                                                 'Table'] == referencing_table), 'IsSolved'])  # TODO: remove this print asap
-                mk.write_table_to_db(referencing_table)
+            for referencing in mk.waiting['Referencing']:
+                if mk.is_referencing_table_writable(referencing):
+                    mk.write_table_to_db(referencing)
+                    mk.waiting['Referencing'].remove(referencing)
+        else:
+            mk.waiting['Referenced'].append(referenced_table)
 
     # Final update of the stats table
     for _, row in mk.stats.iterrows():
@@ -236,6 +299,20 @@ def populate_db(mk, meta_kaggle_path):
     print("*** STATS ***")
     print("*************\n")
     print(mk.stats)
+
+    # while mk.stats.loc[mk.stats['Written'] != True, :].shape[0] > 0:
+    #     for referenced_table in mk.referencing_tables_lists.index:
+    #         for referencing_table in mk.referencing_tables_lists[referenced_table]:
+    #             if all(mk.constraints_df.loc[
+    #                        (mk.constraints_df['Table'] == referencing_table),
+    #                        'Referenced Table'
+    #                    ].isin(mk.stats.loc[mk.stats['Written'] == True, 'Table'])):
+    #
+    #                 if not mk.stats[mk.stats['Table'] == referencing_table, 'Written']:
+    #                     mk.write_table_to_db(referencing_table)
+    #
+    #         if not mk.stats[mk.stats['Table'] == referenced_table, 'Written']:
+    #             mk.write_table_to_db(referenced_table)
 
 
 if __name__ == "__main__":
