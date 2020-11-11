@@ -141,11 +141,11 @@ class MetaKagglePreprocessor:
             df = self.dataframes[table_name]
 
         print('Writing "{}" to database...'.format(table_name))
-        df.to_sql(table_name[:-4].lower(),
-                  self.engine,
-                  if_exists='append',  # TODO: make a choice here
-                  index=False,
-                  chunksize=10000)
+        # df.to_sql(table_name[:-4].lower(),
+        #           self.engine,
+        #           if_exists='append',  # TODO: make a choice here
+        #           index=False,
+        #           chunksize=10000)
 
         self.stats.loc[self.stats['Table'] == table_name, 'Written'] = True
         print('"{}" written to database.\n'.format(table_name))
@@ -263,6 +263,19 @@ def populate_db(mk):
     print("CONSTRAINTS_DF")
     print(mk.constraints_df)
     print("\n")
+
+    # Final update of the stats table
+    for _, row in mk.stats.iterrows():
+        mk.stats.loc[mk.stats['Table'] == row['Table'], 'Final#rows'] = mk.dataframes[row['Table']].shape[0]
+
+    mk.stats['Ratio'] = mk.stats['Final#rows'] / mk.stats['Initial#rows'] * 100
+    mk.stats['Ratio'] = mk.stats['Ratio'].astype(float).round(decimals=2)
+
+    print("*************")
+    print("*** STATS ***")
+    print("*************\n")
+    print(mk.stats)
+
     print("STATS")
     print(mk.stats)
 
