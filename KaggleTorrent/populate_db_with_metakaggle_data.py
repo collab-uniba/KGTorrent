@@ -47,8 +47,11 @@ def set_foreign_keys(sqlalchemy_engine, constraints_file_path):
         referenced_table = fk['Referenced Table'][:-4].lower()
         referenced_col = fk['Referenced Column']
 
-        con.execute(f'ALTER TABLE {table_name} '
-                    f'ADD FOREIGN KEY ({foreign_key}) REFERENCES {referenced_table}({referenced_col});')
+        query = f'ALTER TABLE {table_name} ' \
+                f'ADD FOREIGN KEY ({foreign_key}) REFERENCES {referenced_table}({referenced_col});'
+
+        print('Executing "{}"'.format(query))
+        con.execute(query)
 
 
 # MAIN CLASS
@@ -202,8 +205,8 @@ class MetaKagglePreprocessor:
                     self.process_referencing_table(referenced)
                 self.clean_referencing(referencing, referenced)
 
-            if not self.stats.loc[self.stats['Table'] == referencing, 'Written'].values[0]:
-                self.write_table_to_db(referencing)
+            # if not self.stats.loc[self.stats['Table'] == referencing, 'Written'].values[0]:
+            #     self.write_table_to_db(referencing)
 
     def clean_referencing(self, referencing, referenced):
         # From the constraints_df, I select info on the foreign keys of the referencing table
@@ -250,6 +253,18 @@ def populate_db(mk):
 
         mk.process_referencing_table(value)
         mk.already_visited = []
+
+    for value in mk.constraints_df['Table'].unique():
+        if not mk.stats.loc[mk.stats['Table'] == value, 'Written'].values[0]:
+            mk.write_table_to_db(value)
+        else:
+            print("IT HAPPENED!")
+
+    print("CONSTRAINTS_DF")
+    print(mk.constraints_df)
+    print("\n")
+    print("STATS")
+    print(mk.stats)
 
 
 def populate_db2(mk, meta_kaggle_path):
