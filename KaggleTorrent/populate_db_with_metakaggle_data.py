@@ -181,21 +181,78 @@ class MetaKagglePreprocessor:
         return self.constraints_df.loc[self.constraints_df['Table'] == table, 'Referenced Table'].values
 
     def process_referencing_table(self, referencing):
+        print("### READING", referencing)
+
+        self.load_table(referencing)
+        self.already_visited.append(referencing)  # TODO: avoidable
         referenced_list = self.get_referenced_list(referencing)
 
-        if len(referenced_list) == 0:
-            return referencing
+        # Se la lista di referenced è vuota e non ho già scritto in passato questa tabella, allora la scrivo
+        if len(referenced_list) == 0 and \
+                (not self.stats.loc[self.stats['Table'] == referencing, 'Written'].values[0]):
+            print("### WRITING", referencing)
+            self.write_table_to_db(referencing)
 
+        # Altrimenti risolvo tutte le dipendenze e infine, se non avevo già scritto o visitato questa tabella
+        # in passato, la scrivo
         else:
             for referenced in referenced_list:
+                print(self.already_visited)
                 if referenced not in self.already_visited:
-                    r = self.process_referencing_table(referenced)
-                    self.already_visited.append(referenced)
-                referencing = self.clean_referencing(referencing, r)
-            return referencing
+                    self.process_referencing_table(referenced)
+                self.clean_referencing(referencing, referenced)
+
+            if not self.stats.loc[self.stats['Table'] == referencing, 'Written'].values[0]:
+                self.write_table_to_db(referencing)
+
+    def clean_referencing(self, referencing, referenced):
+        # From the constraints_df, I select info on the foreign keys of the referencing table
+        # that point to the current referenced table.
+        # In most cases I have only one of such foreign keys, but they might be more
+        constraints_data = self.constraints_df.loc[
+            ((self.constraints_df['Table'] == referencing) &
+             (self.constraints_df['Referenced Table'] == referenced)),
+            ['Foreign Key', 'Referenced Column']
+        ]
+
+        # I cycle through the foreign keys of the referencing table that point to the current referenced table
+        for _, constraint in constraints_data.iterrows():
+            fk = constraint['Foreign Key']
+            print(f'\t\tForeign key: {fk}')
+
+            rc = constraint['Referenced Column']
+            print(f'\t\tReferenced column: {rc}')
+
+            # For each foreign key, I update the referencing table
+            # by removing rows that miss a corresponding row in the referenced table
+            print(
+                f'\tUpdating the referencing table "{referencing}" (foreign key "{fk}") with the referenced table "{referenced}"')
+            self.dataframes[referencing] = self.dataframes[referencing][
+                self.dataframes[referencing][fk].isin(self.dataframes[referenced][rc])
+            ]
+
+            # Then I mark the constraint as solved
+            self.constraints_df.loc[((self.constraints_df['Table'] == referencing) &
+                                     (self.constraints_df['Referenced Table'] == referenced) &
+                                     (self.constraints_df['Foreign Key'] == fk)), 'IsSolved'] = True
 
 
-def populate_db(mk, meta_kaggle_path):
+def populate_db(mk):
+    print("***********")
+    print("** START **")
+    print("***********")
+
+    for value in mk.constraints_df['Table'].unique():
+        print("\n")
+        print("-------------")
+        print("- New cycle -")
+        print("-------------")
+
+        mk.process_referencing_table(value)
+        mk.already_visited = []
+
+
+def populate_db2(mk, meta_kaggle_path):
     # First of all, I load and write to the db all the tables that do not have foreign keys
     # TODO: probably this step can be avoided (and also the need for `meta_kaggle_path` in input to this function)
     # for root, dirs, files in os.walk(meta_kaggle_path):

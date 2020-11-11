@@ -33,8 +33,7 @@ def main():
         meta_kaggle_path=config.meta_kaggle_path,
         sqlalchemy_engine=db_engine)
     populate_db_with_metakaggle_data.populate_db(
-        mk_preprocessor,
-        meta_kaggle_path=config.meta_kaggle_path)
+        mk_preprocessor)
     populate_db_with_metakaggle_data.set_foreign_keys(
         sqlalchemy_engine=db_engine,
         constraints_file_path=config.constraints_file_path)
