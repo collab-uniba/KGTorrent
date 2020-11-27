@@ -6,6 +6,7 @@ Use it once you have created the database schema by running the `build_db_schema
 import os
 
 import pandas as pd
+import numpy as np
 
 import KaggleTorrent.config as config
 from KaggleTorrent.db_connection_handler import DbConnectionHandler
@@ -39,7 +40,7 @@ def check_table_emptiness(table_name, engine):
 def set_foreign_keys(sqlalchemy_engine, constraints_file_path):
     con = sqlalchemy_engine.connect()
     # TODO: Read this file outside of this function (it is needed also by the MetaKagglePreprocessor constructor)
-    constraints_df = pd.read_excel(constraints_file_path)
+    constraints_df = pd.read_excel(constraints_file_path, sheet_name='Foglio2')
 
     for _, fk in constraints_df.iterrows():
         table_name = fk['Table'][:-4].lower()
@@ -79,7 +80,7 @@ class MetaKagglePreprocessor:
         # Dataframe containing constraints info:
         # (Referencing Table, Foreign Key, Referenced Table, Referenced Column)
         # TODO: change to read_csv; maybe this file should be read outside of this constructor
-        self.constraints_df = pd.read_excel(constraints_file_path)
+        self.constraints_df = pd.read_excel(constraints_file_path, sheet_name='Foglio2')
         self.constraints_df['IsSolved'] = False
 
         # Keep track tables that have been already visited during the current recursive call
@@ -104,6 +105,11 @@ class MetaKagglePreprocessor:
 
         if is_ready_for_db:
             df = pd.read_csv(os.path.join(self.meta_kaggle_path, table_name))
+
+            if 'ForumMessageVotes' in table_name:
+                print('\t\t Fix indexing...')
+                df.drop_duplicates(subset=['Id'], inplace=True)
+
             df = parse_dates(df)
             self.write_table(table_name, df)
 
@@ -112,6 +118,32 @@ class MetaKagglePreprocessor:
 
             print('\t- Table not loaded yet, reading the csv...')
             self.dataframes[table_name] = pd.read_csv(os.path.join(self.meta_kaggle_path, table_name))
+
+            # SPECIFIC TABLES FIX
+            if 'ForumMessageVotes' in table_name:
+                print('\t\t Fix indexing...')
+                self.dataframes[table_name].drop_duplicates(subset=['Id'], inplace=True)
+
+            if 'Submissions' in table_name:
+                print('\t\t Fix precision columns')
+
+                self.dataframes[table_name]['PublicScoreLeaderboardDisplay'] = self.dataframes[table_name][
+                    'PublicScoreLeaderboardDisplay'].map(lambda x: round(float(x), 3)).map(
+                    lambda x: x if not np.isinf(x) else np.NaN)
+
+                self.dataframes[table_name]['PublicScoreFullPrecision'] = self.dataframes[table_name][
+                    'PublicScoreFullPrecision'].map(lambda x: round(float(x), 3)).map(
+                    lambda x: x if not np.isinf(x) else np.NaN)
+
+                self.dataframes[table_name]['PrivateScoreLeaderboardDisplay'] = self.dataframes[table_name][
+                    'PrivateScoreLeaderboardDisplay'].map(lambda x: round(float(x), 3)).map(
+                    lambda x: x if not np.isinf(x) else np.NaN)
+
+                self.dataframes[table_name]['PrivateScoreFullPrecision'] = self.dataframes[table_name][
+                    'PrivateScoreFullPrecision'].map(lambda x: round(float(x), 3)).map(
+                    lambda x: x if not np.isinf(x) else np.NaN)
+
+            # DATE COLUMNS FIX
             self.dataframes[table_name] = parse_dates(self.dataframes[table_name])
             new_stats_row = {
                 'Table': table_name,
@@ -218,7 +250,8 @@ class MetaKagglePreprocessor:
                 f'\tUpdating the referencing table "{referencing}" (foreign key "{fk}") '
                 f'with the referenced table "{referenced}"')
             self.dataframes[referencing] = self.dataframes[referencing][
-                self.dataframes[referencing][fk].isin(self.dataframes[referenced][rc])
+                (self.dataframes[referencing][fk].isin(self.dataframes[referenced][rc])) |
+                (self.dataframes[referencing][fk].isnull())
             ]
 
             # Then I mark the constraint as solved
