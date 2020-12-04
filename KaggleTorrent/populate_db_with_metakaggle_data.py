@@ -7,6 +7,7 @@ import os
 
 import pandas as pd
 import numpy as np
+from sqlalchemy.exc import IntegrityError
 
 import KaggleTorrent.config as config
 from KaggleTorrent.db_connection_handler import DbConnectionHandler
@@ -52,7 +53,10 @@ def set_foreign_keys(sqlalchemy_engine, constraints_file_path):
                 f'ADD FOREIGN KEY ({foreign_key}) REFERENCES {referenced_table}({referenced_col});'
 
         print('Executing "{}"'.format(query))
-        con.execute(query)
+        try:
+            con.execute(query)
+        except IntegrityError as e:
+            print('\033[91m' + "\t - INTEGRITY ERROR. Can't update table ", table_name, '\033[0m')
 
 
 def parse_dates(df):
@@ -270,9 +274,39 @@ def populate_db(mk):
 
     """
 
-    print("***************************")
-    print("** DB POPULATION STARTED **")
-    print("***************************")
+    print("*****************************")
+    print("** DB POPULATION STARTED 1 **")
+    print("*****************************")
+
+    # Process tables before writing
+    # (and write those w/o fks)
+    for value in mk.constraints_df['Table'].unique():
+        print("\n")
+        print("-------------")
+        print("- New cycle -")
+        print("-------------")
+
+        mk.process_referencing_table(value)
+        mk.already_visited = []
+
+    print("*****************************")
+    print("** DB POPULATION STARTED 2 **")
+    print("*****************************")
+
+    # Process tables before writing
+    # (and write those w/o fks)
+    for value in mk.constraints_df['Table'].unique():
+        print("\n")
+        print("-------------")
+        print("- New cycle -")
+        print("-------------")
+
+        mk.process_referencing_table(value)
+        mk.already_visited = []
+
+    print("*****************************")
+    print("** DB POPULATION STARTED 3 **")
+    print("*****************************")
 
     # Process tables before writing
     # (and write those w/o fks)
