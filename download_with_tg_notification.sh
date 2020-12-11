@@ -3,6 +3,6 @@
 # Source them by issuing the command `source .env`
 
 python ./utils/tg_notifier.py "KT_test: download started." && \
-				python ./KaggleTorrent/http_downloader.py && \
+				python -m KaggleTorrent.http_downloader && \
 				python ./utils/tg_notifier.py "KT_test: download completed." || \
 				python ./utils/tg_notifier.py "KT_test: download failed."
