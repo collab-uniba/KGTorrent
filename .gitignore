@@ -1,4 +1,5 @@
 # Custom ignores
+.env
 .idea/
 
 notebook_output/*
