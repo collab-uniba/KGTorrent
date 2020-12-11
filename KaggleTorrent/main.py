@@ -2,7 +2,8 @@
 
 from KaggleTorrent import config, \
     build_db_schema, \
-    populate_db_with_metakaggle_data
+    populate_db_with_metakaggle_data, \
+    http_downloader
 from KaggleTorrent.db_connection_handler import DbConnectionHandler
 
 
@@ -44,7 +45,10 @@ def main():
     # To get a specific subset of notebooks, query the database by using
     # the db_schema object as needed.
     print("Notebooks download started")
-    # TODO: create a class to handle notebooks download and related db updates
+    http_downloader.HTTPDownloader(
+        sqlalchemy_engine=db_engine,
+        download_config=config.download_conf
+    )
     print("Notebooks download completed")
 
 
