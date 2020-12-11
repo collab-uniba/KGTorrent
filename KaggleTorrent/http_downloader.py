@@ -33,17 +33,17 @@ class HTTPDownloader:
                 'kernels.CurrentUrlSlug, ' \
                 'kernels.CurrentKernelVersionId ' \
                 'FROM ' \
-                '((kernels INNER JOIN users ON kernels.AuthorUserId = users.Id) ' \
+                '(((kernels INNER JOIN users ON kernels.AuthorUserId = users.Id) ' \
                 'INNER JOIN kernelversions ON kernels.CurrentKernelVersionId = kernelversions.Id) ' \
-                'INNER JOIN kernellanguages ON kernelversions.ScriptLanguageId = kernellanguages.Id ' \
-                f'WHERE kernelversions.TotalLines >= {self.nb_min_lines} '
+                'INNER JOIN kernellanguages ON kernelversions.ScriptLanguageId = kernellanguages.Id) ' \
+                f'WHERE '
 
         # Check for languages
         languages = download_config['languages']
         for lang in languages:
 
             if lang is languages[0]:
-                query = query + f'AND kernellanguages.name LIKE \'{lang}\' '
+                query = query + f'kernellanguages.name LIKE \'{lang}\' '
 
             else:
                 query = query + f'OR kernellanguages.name LIKE \'{lang}\' '
