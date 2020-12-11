@@ -92,7 +92,7 @@ class HTTPDownloader:
                 notebook_file.write(notebook.content)
 
             n_successful_downloads += 1
-            logging.info(f'Downloaded {row[2]}')
+            logging.info(f'Downloaded {row[1]}/{row[2]} (ID: {row[3]})')
 
             # Wait a bit to avoid a potential IP banning
             time.sleep(1)
