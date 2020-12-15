@@ -2,7 +2,7 @@
 
 from KaggleTorrent import config, \
     build_db_schema, \
-    populate_db_with_metakaggle_data, \
+    populate_db, \
     http_downloader
 from KaggleTorrent.db_connection_handler import DbConnectionHandler
 
@@ -29,13 +29,14 @@ def main():
     print("Database schema built")
 
     # Populate the database with notebook metadata
-    mk_preprocessor = populate_db_with_metakaggle_data.MetaKagglePreprocessor(
+    mk_preprocessor = populate_db.MetaKagglePreprocessor(
         config.constraints_file_path,
         meta_kaggle_path=config.meta_kaggle_path,
         sqlalchemy_engine=db_engine)
-    populate_db_with_metakaggle_data.populate_db(
+    populate_db.populate_db(
         mk_preprocessor)
-    populate_db_with_metakaggle_data.set_foreign_keys(
+
+    populate_db.set_foreign_keys(
         sqlalchemy_engine=db_engine,
         constraints_file_path=config.constraints_file_path)
 
