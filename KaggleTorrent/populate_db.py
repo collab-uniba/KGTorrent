@@ -248,6 +248,8 @@ class MetaKagglePreprocessor:
             rc = constraint['Referenced Column']
             print(f'\t\tReferenced column: {rc}')
 
+            old_df_rows = self.dataframes[referencing].shape[0]
+
             # For each foreign key, I update the referencing table
             # by removing rows that miss a corresponding row in the referenced table
             print(
@@ -257,6 +259,11 @@ class MetaKagglePreprocessor:
                 (self.dataframes[referencing][fk].isin(self.dataframes[referenced][rc])) |
                 (self.dataframes[referencing][fk].isnull())
             ]
+
+            # If any rows have been removed, I mark the constraints in which
+            # this table is 'Referenced Table' as not solved
+            if self.dataframes[referencing].shape[0] != old_df_rows:
+                self.constraints_df.loc[(self.constraints_df['Referenced Table'] == referencing), 'IsSolved'] = False
 
             # Then I mark the constraint as solved
             self.constraints_df.loc[((self.constraints_df['Table'] == referencing) &
@@ -274,50 +281,23 @@ def populate_db(mk):
 
     """
 
-    print("*****************************")
-    print("** DB POPULATION STARTED 1 **")
-    print("*****************************")
+    print("***************************")
+    print("** DB POPULATION STARTED **")
+    print("***************************")
 
-    # Process tables before writing
-    # (and write those w/o fks)
-    for value in mk.constraints_df['Table'].unique():
-        print("\n")
-        print("-------------")
-        print("- New cycle -")
-        print("-------------")
+    # While all constraint fields 'IsSolved' is false
+    while not mk.constraints_df['IsSolved'].all():
 
-        mk.process_referencing_table(value)
-        mk.already_visited = []
+        # Pre-process only referencing tables with constraints 'Not Solved' before writing
+        # (and write those w/o fks)
+        for value in (mk.constraints_df[~ mk.constraints_df['IsSolved']])['Table'].unique():
+            print("\n")
+            print("-------------")
+            print("- New cycle -")
+            print("-------------")
 
-    print("*****************************")
-    print("** DB POPULATION STARTED 2 **")
-    print("*****************************")
-
-    # Process tables before writing
-    # (and write those w/o fks)
-    for value in mk.constraints_df['Table'].unique():
-        print("\n")
-        print("-------------")
-        print("- New cycle -")
-        print("-------------")
-
-        mk.process_referencing_table(value)
-        mk.already_visited = []
-
-    print("*****************************")
-    print("** DB POPULATION STARTED 3 **")
-    print("*****************************")
-
-    # Process tables before writing
-    # (and write those w/o fks)
-    for value in mk.constraints_df['Table'].unique():
-        print("\n")
-        print("-------------")
-        print("- New cycle -")
-        print("-------------")
-
-        mk.process_referencing_table(value)
-        mk.already_visited = []
+            mk.process_referencing_table(value)
+            mk.already_visited = []
 
     # Write processed tables to the database
     for value in mk.constraints_df['Table'].unique():
