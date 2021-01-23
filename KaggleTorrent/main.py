@@ -5,7 +5,7 @@ import argparse
 from KaggleTorrent import config, \
     build_db_schema, \
     populate_db, \
-    http_downloader
+    downloader
 from KaggleTorrent.db_connection_handler import DbConnectionHandler
 
 
@@ -88,9 +88,10 @@ def main():
         # To get a specific subset of notebooks, query the database by using
         # the db_schema object as needed.
         print("Notebooks download started")
-        http_downloader.HTTPDownloader(
+        downloader.Downloader(
             sqlalchemy_engine=db_engine,
-            download_config=config.download_conf
+            download_config=config.download_conf,
+            strategy=args.strategy
         )
         print("Notebooks download completed")
 
