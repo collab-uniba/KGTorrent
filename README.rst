@@ -3,11 +3,11 @@ KGTorrent
 
     *TL/DR*: `KGTorrent <http://neo.di.uniba.it:8080/share.cgi?ssid=0syF2vm>`_ is a large dataset of Jupyter notebooks with rich metadata retrieved from `Kaggle <https://www.kaggle.com>`_. This repository contains the Python scripts developed to create and refresh the collection.
 
-Given their growing popularity among data scientists, computational notebooks - and in particular `Jupyter notebooks <https://jupyter.org>`_ - are being increasingly studied by researchers worldwide. Generally, the aim is to understand how they are typically used, identify possible flaws, and inform the design of extensions and updates of the tool.To ease these kind of research endeavors, we collected and shared `a large dataset of 248,761 Jupyter notebooks from Kaggle <http://neo.di.uniba.it:8080/share.cgi?ssid=0syF2vm>`_, named **KGTorrent**. 
+Given their growing popularity among data scientists, computational notebooks - and in particular `Jupyter notebooks <https://jupyter.org>`_ - are being increasingly studied by researchers worldwide. Generally, the aim is to understand how they are typically used, identify possible flaws, and inform the design of extensions and updates of the tool. To ease these kind of research endeavors, we collected and shared a large dataset of 248,761 Jupyter notebooks from Kaggle, named `**KGTorrent** <http://neo.di.uniba.it:8080/share.cgi?ssid=0syF2vm>`_. 
 
 `Kaggle <https://www.kaggle.com>`_ is a web platform hosting machine learning competitions that enables the creation and execution of Jupyter notebooks in a containerized computational environment. By leveraging `Meta Kaggle <https://www.kaggle.com/kaggle/meta-kaggle>`_, a dataset that is publicly available on the platform, we also built a companion MySQL database containing metadata on the notebooks in our dataset.
 
-This repository contains the Python scripts we developed to create KGTorrent. By leveraging the latest version of Meta Kaggle, the same scripts can also be used to refresh the collection.
+This repository hosts the Python scripts we developed to create KGTorrent. By leveraging the latest version of Meta Kaggle, the same scripts can also be used to refresh the collection.
 
 
 
@@ -18,9 +18,9 @@ Configuration
 
 For the development of KGTorrent we used the following environment:
 
-- MySQL 5.7.11+
-- Conda 4.9.2+
-- Python 3.7+
+- ``MySQL 5.7.11+``
+- ``Conda 4.9.2+``
+- ``Python 3.7+``
 
 **Environment setup**
 
@@ -47,10 +47,10 @@ Here we provide definitions for each required environment variable.
     The name of the MySQL database where KGTorrent metadata will be stored. By default, it is ``kaggle_torrent``.
 
 ``MYSQL_USER``
-    Your MySQL username
+    Your MySQL username.
 
 ``MYSQL_PWD``
-    Your MySQL password
+    Your MySQL password.
 
 ``METAKAGGLE_PATH``
     The path to the folder containing the uncompressed Meta Kaggle dataset.
@@ -70,16 +70,16 @@ Usage examples
 
 To replicate our collection, you first have to download and uncompress the Meta Kaggle version that we used to build the KGTorrent companion database (retrieved on October 27, 2020). Since it is no more available on Kaggle, we share it as part of the `dataset package <http://neo.di.uniba.it:8080/share.cgi?ssid=0syF2vm>`_: it is the compressed archive named ``MetaKaggle27Oct2020.tar.bz2``.
 
-Once Meta Kaggle is available on your machine and the corresponding environment variable has been set accordingly, you can start the creation process by issuing the following command::
+Once Meta Kaggle is available on your machine and the corresponding environment variable has been set, you can start the creation process by issuing the following command::
 
-    python KGTorrent.py init --strategy HTTP
+    python kgtorrent.py init --strategy HTTP
 
 The ``--strategy`` argument determines whether the notebooks will be downloaded via ``HTTP`` requests or via ``API`` calls. Notebooks downloaded via the official Kaggle API miss the output of code cells, while those downloaded via HTTP requests are complete.
 
-Once you start the creation process, KGTorrent scripts will go through the following steps:
+Once you start the creation process, KGTorrent will go through the following steps:
 
 1. *Database initialization*: a new MySQL database is created and set up with the data schema required to store Meta Kaggle data.
-2. *Meta Kaggle preprocessing*: Meta Kaggle is an archive containing 29 tables in the `.csv` file format. As of today, it cannot be imported in a relational database without incurring in referential integrity violations. This happens because many of the tables miss some rows, as they probably contain private information. Our program overcomes this issue by performing a pre-processing step in which rows with unresolved foreing keys are dropped from each Meta Kaggle table.
+2. *Meta Kaggle preprocessing*: Meta Kaggle is an archive containing 29 tables in the ``.csv`` file format. As of today, it cannot be imported in a relational database without incurring in referential integrity violations. This happens because many of the tables miss some rows, as they probably contain private information. Our program overcomes this issue by performing a pre-processing step in which rows with unresolved foreing keys are dropped from each Meta Kaggle table.
 3. *Database population*: the MySQL database is populated with information from the filtered Meta Kaggle tables.
 4. *Notebooks download*: the Jupyter notebooks are downloaded from Kaggle using the preferred strategy (HTTP or API). An SQL query is used to retrieve the list of notebooks to be downaloded from the MySQL database.
 
@@ -88,12 +88,12 @@ Once you start the creation process, KGTorrent scripts will go through the follo
 
 To refresh the collection - i.e., to align the dataset to the current state of Kaggle - download the latest version of Meta Kaggle.
 
-Once Meta Kaggle has been downloaded on your machine and the corresponding environment variable has been set accordingly, you can start the refresh process by issuing the following command::
+Once Meta Kaggle has been downloaded on your machine and the corresponding environment variable has been set, you can start the refresh process by issuing the following command::
 
-    python KGTorrent.py refresh --strategy HTTP
+    python kgtorrent.py refresh --strategy HTTP
 
-A new MySQL database will be created and populated with the information from the lastest Meta Kaggle. Warning: if a database with the same name already exists, it will be overwritten. Then the download procedure will start; this time, the list of notebooks to be downloaded will be checked against the files that are already present in the dataset folder: notebooks that are already locally available will not be downloaded.
-Moreover, notebooks from the previous version of KGTorrent that are no more referenced in the refreshed database will be deleted. Indeed, it can happen that notebooks get deleted from the platform and loose their reference in Meta Kaggle. Such notebooks wou
+A new MySQL database will be created and populated with the information from the lastest Meta Kaggle. *Warning*: if a database with the same name already exists, it will be overwritten. Then the download procedure will start; this time, the list of notebooks to be downloaded will be checked against the files that are already present in the dataset folder: notebooks that are already locally available will not be downloaded.
+Moreover, notebooks from the previous version of KGTorrent that are no more referenced in the refreshed database will be deleted. Indeed, it can happen that notebooks get deleted from the platform and loose their reference in Meta Kaggle.
 
 
 Versions
