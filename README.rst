@@ -3,7 +3,7 @@ KGTorrent
 
     *TL/DR*: `KGTorrent <http://neo.di.uniba.it:8080/share.cgi?ssid=0syF2vm>`_ is a large dataset of Jupyter notebooks with rich metadata retrieved from `Kaggle <https://www.kaggle.com>`_. This repository contains the Python scripts developed to create and refresh the collection.
 
-Given their growing popularity among data scientists, computational notebooks - and in particular `Jupyter notebooks <https://jupyter.org>`_ - are being increasingly studied by researchers worldwide. Generally, the aim is to understand how they are typically used, identify possible flaws, and inform the design of extensions and updates of the tool. To ease these kind of research endeavors, we collected and shared a large dataset of 248,761 Jupyter notebooks from Kaggle, named `**KGTorrent** <http://neo.di.uniba.it:8080/share.cgi?ssid=0syF2vm>`_. 
+Given their growing popularity among data scientists, computational notebooks - and in particular `Jupyter notebooks <https://jupyter.org>`_ - are being increasingly studied by researchers worldwide. Generally, the aim is to understand how they are typically used, identify possible flaws, and inform the design of extensions and updates of the tool. To ease these kind of research endeavors, we collected and shared a large dataset of 248,761 Jupyter notebooks from Kaggle, named `KGTorrent <http://neo.di.uniba.it:8080/share.cgi?ssid=0syF2vm>`_.
 
 `Kaggle <https://www.kaggle.com>`_ is a web platform hosting machine learning competitions that enables the creation and execution of Jupyter notebooks in a containerized computational environment. By leveraging `Meta Kaggle <https://www.kaggle.com/kaggle/meta-kaggle>`_, a dataset that is publicly available on the platform, we also built a companion MySQL database containing metadata on the notebooks in our dataset.
 
@@ -12,7 +12,7 @@ This repository hosts the Python scripts we developed to create KGTorrent. By le
 
 
 Configuration
-------------
+-------------
 
 **Requirements**
 
