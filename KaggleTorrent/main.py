@@ -1,6 +1,12 @@
 #!/usr/bin/env python3
 
 import argparse
+import sys
+from pathlib import Path
+
+from sqlalchemy_utils import database_exists, \
+    create_database, \
+    drop_database
 
 from KaggleTorrent import config, \
     build_db_schema, \
@@ -17,16 +23,16 @@ def main():
     # Create the parser
     my_parser = argparse.ArgumentParser(
         prog='KaggleTorrent',
-        usage='%(prog)s <generate|update> [options]',
-        description='Create or update KaggleTorrent'
+        usage='%(prog)s <init|refresh> [options]',
+        description='Initialize or refresh KaggleTorrent'
     )
 
     # Add the arguments
     my_parser.add_argument('command',
                            type=str,
-                           choices=['generate', 'update'],
-                           help='Use the `generate` command to create KaggleTorrent from scratch or '
-                                'the `update` command to update KaggleTorrent '
+                           choices=['init', 'refresh'],
+                           help='Use the `init` command to create KaggleTorrent from scratch or '
+                                'the `refresh` command to update KaggleTorrent '
                                 'according to the last version of Meta Kaggle.')
 
     my_parser.add_argument('--strategy',
@@ -57,13 +63,47 @@ def main():
     db_engine = db_connection_handler.create_sqlalchemy_engine()
     print("Connected to the database")
 
-    if command == 'generate':
+    # CHECK USER VARIABLES
+    proceed = None
 
+    # Check db emptiness
+    if database_exists(db_engine.url):
+        if command == 'init':
+            print(f'Database {config.db_name} already exist. Provide database name that does not exist.',
+                  file=sys.stderr)
+            proceed = False
+        if command == 'refresh':
+            print(f'Database {config.db_name} already exist. This operation will reinitialize the current database')
+            print('and populate it with provided MetaKaggle version.')
+            ans = input(f'Are you sure to re-initialize {config.db_name} database? [yes]\n')
+            if ans.lower() == 'yes':
+                proceed = True
+            else:
+                proceed = False
+    else:
+        if command == 'refresh':
+            print(f'Database {config.db_name} does not exist. Provide database name that contain a MetaKaggle version.',
+                  file=sys.stderr)
+            proceed = False
+        proceed = True
+
+    # Check download folder emptiness when init
+    has_data = next(Path(config.nb_archive_path).iterdir(), None)
+    if (has_data is not None) & (command == 'init'):
+        print(f'Download folder {config.nb_archive_path} is not empty.', file=sys.stderr)
+        print('Provide an empty folder for download notebooks.', file=sys.stderr)
+        proceed = False
+
+    #KGTorrent process
+    if proceed:
+
+        print('Initializing the database...')
         # Initialize the db
-        con = db_engine.connect()
-        con.execute('DROP DATABASE IF EXISTS kaggle_torrent;')
-        con.execute('CREATE DATABASE IF NOT EXISTS kaggle_torrent CHARACTER SET utf8mb4;')
+        if database_exists(db_engine.url):
+            drop_database(db_engine.url)
+        create_database(db_engine.url,'utf8mb4')
 
+        print('Building table schemes...')
         # Build the database schema
         db_schema = build_db_schema.DbSchema(
             sqlalchemy_engine=db_engine
@@ -78,6 +118,7 @@ def main():
         populate_db.populate_db(
             mk_preprocessor)
 
+        print('Applying foreign key constraints')
         populate_db.set_foreign_keys(
             sqlalchemy_engine=db_engine,
             constraints_file_path=config.constraints_file_path)
@@ -95,10 +136,8 @@ def main():
         )
         print("Notebooks download completed")
 
-    elif command == 'update':
-        print('Update case!')
-        print('Strategy:', args.strategy)
-        pass
+    time.sleep(0.2)
+    print('KGTorrent end')
 
 
 if __name__ == '__main__':

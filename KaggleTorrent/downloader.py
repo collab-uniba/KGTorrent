@@ -28,8 +28,8 @@ class Downloader:
         self.lang = download_config['languages'][0]
         self.nb_min_lines = download_config['min_nb_lines']
 
-        # # QUERY PROCEDURE
-
+        # QUERY PROCEDURE
+        print('Getting nokebook slugs from db...')
         # Prepare the query
         query = 'SELECT ' \
                 'users.UserName, ' \
@@ -52,7 +52,7 @@ class Downloader:
                 query = query + f'OR kernellanguages.name LIKE \'{lang}\' '
 
         # Close the query
-        query = query + 'LIMIT 10;'
+        query = query + ';'
 
         # Execute the query
         res = pd.read_sql(sql=query, con=self.engine)
@@ -170,8 +170,6 @@ class Downloader:
                      f'Total attempts: {total_rows}:\n'
                      f'\t- {n_successful_downloads} successful;\n'
                      f'\t- {n_failed_downloads} failed.')
-
-
 
 if __name__ == '__main__':
 

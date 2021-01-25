@@ -16,7 +16,7 @@ db_password = os.environ['MYSQL_PWD']
 
 # Paths
 meta_kaggle_path = os.environ['METAKAGGLE_PATH']
-constraints_file_path = '../data/fk_constraints_data.xlsx'
+constraints_file_path = '../data/fk_constraints_data.csv'
 nb_archive_path = os.environ['NB_DEST_PATH']
 log_path = os.environ['LOG_DEST_PATH']
 
