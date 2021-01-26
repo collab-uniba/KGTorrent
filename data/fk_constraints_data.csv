@@ -1,4 +1,4 @@
-Table,Foreign Key,Referenced Table,Referenced Column: 3
+Table,Foreign Key,Referenced Table,Referenced Column
 UserAchievements.csv,UserId,Users.csv,Id
 KernelVersions.csv,AuthorUserId,Users.csv,Id
 KernelVersions.csv,ScriptId,Kernels.csv,Id
