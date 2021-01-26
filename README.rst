@@ -97,7 +97,7 @@ Moreover, notebooks from the previous version of KGTorrent that are no more refe
 
 **Using the collection**
 
-Users interested in analyzing the KGTorrent database should download it from its Zenodo repository; it is stored as a compressed archive named ``KGT_dataset.tar.bz2``. The dataset can be analyzed as a whole, although we believe that the most interesting use case is to leverage the companion database to select a subset of notebooks based on specific research criteria. To this aim, along with the dataset, one should download the compressed archive containing the dump of the MySQL database (named ``KGTorrent_dump_10-2020.sql.tar.bz2``), uncompress it and import it into a local MySQK installation.
+Users interested in analyzing the KGTorrent database should download it from its Zenodo repository; it is stored as a compressed archive named ``KGT_dataset.tar.bz2``. The dataset can be analyzed as a whole, although we believe that the most interesting use case is to leverage the companion database to select a subset of notebooks based on specific research criteria. To this aim, along with the dataset, one should download the compressed archive containing the dump of the MySQL database (named ``KGTorrent_dump_10-2020.sql.tar.bz2``), uncompress it and import it into a local MySQL installation.
 
 You can use the Linux ``tar`` command to uncompress both archives::
 
@@ -120,7 +120,7 @@ Here (at ``docs/imgs/KGTorrent_logical_schema.png``) as well as in the Zenodo re
   :width: 1200
   :alt: KGTorrent logical schema
 
-All the most relevant relationships among the db tables are explicitly represented in the schema. However, we omit some of them to ensure a good readability of the figure.
+All the most relevant relationships among the db tables are explicitly represented in the schema. However, we decided to omit some of them to ensure a good readability of the image.
 
 
 
