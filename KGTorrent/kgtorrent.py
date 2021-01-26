@@ -100,7 +100,7 @@ def main():
             drop_database(db_engine.url)
         create_database(db_engine.url,'utf8mb4')
 
-        print('Building table schemes...')
+        print('Building table schemas...')
         # Build the database schema
         db_schema = build_db_schema.DbSchema(
             sqlalchemy_engine=db_engine
