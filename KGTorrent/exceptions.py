@@ -1,4 +1,4 @@
-"""This module defines exceptions that might be risen while building/updating KaggleTorrent using this package."""
+"""This module defines exceptions that might be risen while building/updating KGTorrent using this package."""
 
 class Error(Exception):
     """Base class for exceptions in this package."""

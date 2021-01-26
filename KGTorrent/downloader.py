@@ -12,10 +12,10 @@ from kaggle.api.kaggle_api_extended import KaggleApi
 from tqdm import tqdm
 import logging
 
-import KaggleTorrent.config as config
+import KGTorrent.config as config
 
 # TODO: remove those imports after testing
-from KaggleTorrent.db_connection_handler import DbConnectionHandler
+from KGTorrent.db_connection_handler import DbConnectionHandler
 
 class Downloader:
     """

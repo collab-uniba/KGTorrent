@@ -8,31 +8,31 @@ from sqlalchemy_utils import database_exists, \
     create_database, \
     drop_database
 
-from KaggleTorrent import config, \
+from KGTorrent import config, \
     build_db_schema, \
     populate_db, \
     downloader
-from KaggleTorrent.db_connection_handler import DbConnectionHandler
+from KGTorrent.db_connection_handler import DbConnectionHandler
 
 
 def main():
     """This is the entrypoint for this CLI application.
     Here we will handle possible arguments and orchestrate function/method calls
-    to build and populate the KaggleTorrent database"""
+    to build and populate the KGTorrent database"""
 
     # Create the parser
     my_parser = argparse.ArgumentParser(
-        prog='KaggleTorrent',
+        prog='KGTorrent',
         usage='%(prog)s <init|refresh> [options]',
-        description='Initialize or refresh KaggleTorrent'
+        description='Initialize or refresh KGTorrent'
     )
 
     # Add the arguments
     my_parser.add_argument('command',
                            type=str,
                            choices=['init', 'refresh'],
-                           help='Use the `init` command to create KaggleTorrent from scratch or '
-                                'the `refresh` command to update KaggleTorrent '
+                           help='Use the `init` command to create KGTorrent from scratch or '
+                                'the `refresh` command to update KGTorrent '
                                 'according to the last version of Meta Kaggle.')
 
     my_parser.add_argument('--strategy',
@@ -69,29 +69,26 @@ def main():
     # Check db emptiness
     if database_exists(db_engine.url):
         if command == 'init':
-            print(f'Database {config.db_name} already exist. Provide database name that does not exist.',
+            print(f'Database {config.db_name} already exists. ', file=sys.stderr)
+            print(f'Please, provide a name that is not already in use for the KGTorrent database.',
                   file=sys.stderr)
             proceed = False
         if command == 'refresh':
-            print(f'Database {config.db_name} already exist. This operation will reinitialize the current database')
-            print('and populate it with provided MetaKaggle version.')
+            print(f'Database {config.db_name} already exists. This operation will reinitialize the current database')
+            print('and populate it with the provided MetaKaggle version.')
             ans = input(f'Are you sure to re-initialize {config.db_name} database? [yes]\n')
             if ans.lower() == 'yes':
                 proceed = True
             else:
                 proceed = False
     else:
-        if command == 'refresh':
-            print(f'Database {config.db_name} does not exist. Provide database name that contain a MetaKaggle version.',
-                  file=sys.stderr)
-            proceed = False
         proceed = True
 
     # Check download folder emptiness when init
     has_data = next(Path(config.nb_archive_path).iterdir(), None)
     if (has_data is not None) & (command == 'init'):
         print(f'Download folder {config.nb_archive_path} is not empty.', file=sys.stderr)
-        print('Provide an empty folder for download notebooks.', file=sys.stderr)
+        print('Please, provide the path to an empty folder to store downloaded notebooks.', file=sys.stderr)
         proceed = False
 
     #KGTorrent process

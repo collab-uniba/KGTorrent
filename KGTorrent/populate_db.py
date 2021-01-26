@@ -1,5 +1,5 @@
 """
-This module does the mapping of data from the MetaKaggle dataset to the KaggleTorrent relational database.
+This module does the mapping of data from the MetaKaggle dataset to the KGTorrent relational database.
 Use it once you have created the database schema by running the `build_db_schema` module.
 """
 
@@ -9,8 +9,8 @@ import pandas as pd
 import numpy as np
 from sqlalchemy.exc import IntegrityError
 
-import KaggleTorrent.config as config
-from KaggleTorrent.db_connection_handler import DbConnectionHandler
+import KGTorrent.config as config
+from KGTorrent.db_connection_handler import DbConnectionHandler
 
 
 # PRIVATE UTILITY FUNCTIONS
@@ -22,7 +22,7 @@ def check_table_emptiness(table_name, engine):
     Args:
         table_name (str): the name of the table to be checked,
         which corresponds to the name of the .csv file from which its data is derived (omitting the extension).
-        engine (Engine): the SQLAlchemy engine used to connect to the KaggleTorrent database
+        engine (Engine): the SQLAlchemy engine used to connect to the KGTorrent database
 
     Returns:
         bool: True if the database table is empty, False otherwise.
