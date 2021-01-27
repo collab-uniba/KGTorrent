@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+    <meta charset="utf-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Using the collection &mdash; KGTorrent documentation</title>
+
+
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css"/>
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css"/>
+
+
+    <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+    <![endif]-->
+
+
+    <script type="text/javascript" id="documentation_options" data-url_root="../"
+            src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+
+    <link rel="index" title="Index" href="../genindex.html"/>
+    <link rel="search" title="Search" href="../search.html"/>
+    <link rel="next" title="&lt;no title&gt;" href="../modules.html"/>
+    <link rel="prev" title="Refreshing the collection" href="refreshing.html"/>
+</head>
+
+<body class="wy-body-for-nav">
+
+
+<div class="wy-grid-for-nav">
+
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+        <div class="wy-side-scroll">
+            <div class="wy-side-nav-search">
+
+
+                <a href="../index.html" class="icon icon-home" alt="Documentation Home"> KGTorrent
+
+
+                </a>
+
+
+                <div role="search">
+                    <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+                        <input type="text" name="q" placeholder="Search docs"/>
+                        <input type="hidden" name="check_keywords" value="yes"/>
+                        <input type="hidden" name="area" value="default"/>
+                    </form>
+                </div>
+
+
+            </div>
+
+
+            <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+
+
+                <p class="caption"><span class="caption-text">Contents:</span></p>
+                <ul class="current">
+                    <li class="toctree-l1"><a class="reference internal" href="../configuration.html">Configuration</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="replicating.html">Replicating the
+                        collection</a></li>
+                    <li class="toctree-l1"><a class="reference internal" href="refreshing.html">Refreshing the
+                        collection</a></li>
+                    <li class="toctree-l1 current"><a class="current reference internal" href="#">Using the
+                        collection</a></li>
+                    <li class="toctree-l1"><a class="reference internal" href="../KGTorrent.html">KGTorrent package</a>
+                    </li>
+                </ul>
+
+
+            </div>
+
+        </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+
+        <nav class="wy-nav-top" aria-label="top navigation">
+
+            <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+            <a href="../index.html">KGTorrent</a>
+
+        </nav>
+
+
+        <div class="wy-nav-content">
+
+            <div class="rst-content">
+
+
+                <div role="navigation" aria-label="breadcrumbs navigation">
+
+                    <ul class="wy-breadcrumbs">
+
+                        <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+
+                        <li>Using the collection</li>
+
+
+                        <li class="wy-breadcrumbs-aside">
+
+
+                            <a href="../_sources/usage/using.rst.txt" rel="nofollow"> View page source</a>
+
+
+                        </li>
+
+                    </ul>
+
+
+                    <hr/>
+                </div>
+                <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+                    <div itemprop="articleBody">
+
+                        <div class="section" id="using-the-collection">
+                            <h1>Using the collection<a class="headerlink" href="#using-the-collection"
+                                                       title="Permalink to this headline">¶</a></h1>
+                            <p>Users interested in analyzing the KGTorrent database should download it from its Zenodo
+                                repository; it is stored as a compressed archive named <code
+                                        class="docutils literal notranslate"><span
+                                        class="pre">KGT_dataset.tar.bz2</span></code>. The dataset can be analyzed as a
+                                whole, although we believe that the most interesting use case is to leverage the
+                                companion database to select a subset of notebooks based on specific research criteria.
+                                To this aim, along with the dataset, one should download the compressed archive
+                                containing the dump of the MySQL database (named <code
+                                        class="docutils literal notranslate"><span class="pre">KGTorrent_dump_10-2020.sql.tar.bz2</span></code>),
+                                uncompress it and import it into a local MySQL installation.</p>
+                            <p>You can use the Linux <code class="docutils literal notranslate"><span
+                                    class="pre">tar</span></code> command to uncompress both archives:</p>
+                            <div class="highlight-default notranslate">
+                                <div class="highlight"><pre><span></span><span class="n">tar</span> <span
+                                        class="o">-</span><span class="n">xf</span> <span
+                                        class="n">KGT_dataset</span><span class="o">.</span><span
+                                        class="n">tar</span><span class="o">.</span><span class="n">bz2</span> <span
+                                        class="o">-</span><span class="n">C</span> <span class="o">/</span><span
+                                        class="n">path</span><span class="o">/</span><span class="n">to</span><span
+                                        class="o">/</span><span class="n">local</span><span class="o">/</span><span
+                                        class="n">dataset</span><span class="o">/</span><span class="n">folder</span>
+<span class="n">tar</span> <span class="o">-</span><span class="n">xf</span> <span
+                                            class="n">KGTorrent_dump_10</span><span class="o">-</span><span class="mf">2020.</span><span
+                                            class="n">sql</span><span class="o">.</span><span class="n">tar</span><span
+                                            class="o">.</span><span class="n">bz2</span>
+</pre>
+                                </div>
+                            </div>
+                            <p>Then, import the MySQL dump in your local MySQL installation. To perform this step, you
+                                can follow <a class="reference external"
+                                              href="https://www.digitalocean.com/community/tutorials/how-to-import-and-export-databases-in-mysql-or-mariadb#step-2-mdash-importing-a-mysql-or-mariadb-database">this
+                                    guide</a>.</p>
+                            <p>Once the database has been correctly imported, you can query it to select a subset of
+                                notebooks based on specific criteria. The Jupyter notebooks in KGTorrent are saved with
+                                filenames following this pattern: <code class="docutils literal notranslate"><span
+                                        class="pre">UserName_CurrentUrlSlug</span></code>, where <code
+                                        class="docutils literal notranslate"><span class="pre">UserName</span></code> is
+                                a field of the <code class="docutils literal notranslate"><span class="pre">Users</span></code>
+                                table, while <code class="docutils literal notranslate"><span
+                                        class="pre">CurrentUrlSlug</span></code> is a field of the <code
+                                        class="docutils literal notranslate"><span class="pre">Kernels</span></code>
+                                table. Therefore, by including such pattern in the <code
+                                        class="docutils literal notranslate"><span class="pre">SELECT</span></code>
+                                statement of an SQL query, the result will comprise a column listing the names of the
+                                selected Jupyter notebooks from the dataset.</p>
+                            <p>In the following example, I select the filenames of all the notebooks that have been
+                                awarded a gold medal in Kaggle:</p>
+                            <div class="highlight-mysql notranslate">
+                                <div class="highlight"><pre><span></span><span class="k">SELECT</span> <span class="nf">CONCAT</span><span
+                                        class="p">(</span><span class="n">u</span><span class="p">.</span><span
+                                        class="n">UserName</span><span class="p">,</span> <span
+                                        class="s1">&#39;_&#39;</span><span class="p">,</span> <span
+                                        class="n">k</span><span class="p">.</span><span
+                                        class="n">CurrentUrlSlug</span><span class="p">)</span> <span class="n">FilteredNotebookNames</span>
+<span class="k">FROM</span> <span class="n">kernels</span> <span class="n">k</span> <span class="k">JOIN</span> <span
+                                            class="n">users</span> <span class="n">u</span> <span
+                                            class="k">ON</span> <span class="n">k</span><span class="p">.</span><span
+                                            class="n">AuthorUserId</span> <span class="o">=</span> <span
+                                            class="n">u</span><span class="p">.</span><span class="n">Id</span>
+<span class="k">WHERE</span> <span class="n">k</span><span class="p">.</span><span class="n">Medal</span> <span
+                                            class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+</pre>
+                                </div>
+                            </div>
+                            <p>In the GitHub repository (at <code class="docutils literal notranslate"><span
+                                    class="pre">docs/imgs/KGTorrent_logical_schema.png</span></code>) as well as in the
+                                Zenodo repository containing the dataset, we share the logical schema underlying the
+                                KGTorrent database. We built this schema by reverse engineering a relationa model from
+                                Meta Kaggle data.</p>
+                            <a class="reference internal image-reference"
+                               href="../_images/KGTorrent_logical_schema.png"><img alt="KGTorrent logical schema"
+                                                                                   src="../_images/KGTorrent_logical_schema.png"
+                                                                                   style="width: 1200px;"/></a>
+                            <p>All the most relevant relationships among the db tables are explicitly represented in the
+                                schema. However, we decided to omit some of them to ensure a good readability of the
+                                image.</p>
+                        </div>
+
+
+                    </div>
+
+                </div>
+                <footer>
+
+                    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+
+                        <a href="../modules.html" class="btn btn-neutral float-right" title="&lt;no title&gt;"
+                           accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+
+
+                        <a href="refreshing.html" class="btn btn-neutral float-left" title="Refreshing the collection"
+                           accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+
+                    </div>
+
+
+                    <hr/>
+
+                    <div role="contentinfo">
+                        <p>
+
+                            &copy; Copyright 2021, Collaborative Development Group
+
+                        </p>
+                    </div>
+
+
+                    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+
+                    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+
+                    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+
+                </footer>
+
+            </div>
+        </div>
+
+    </section>
+
+</div>
+
+
+<script type="text/javascript">
+    jQuery(function () {
+        SphinxRtdTheme.Navigation.enable(true);
+    });
+</script>
+
+
+</body>
+</html>
