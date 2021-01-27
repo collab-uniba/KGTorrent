@@ -9,7 +9,7 @@ Given their growing popularity among data scientists, computational notebooks - 
 
 This repository hosts the Python scripts we developed to create KGTorrent. By leveraging the latest version of Meta Kaggle, the same scripts can also be used to refresh the collection.
 
-
+For further details, please visit the `full documentation of KGTorrent <https://collab-uniba.github.io/KGTorrent/>`_.
 
 Configuration
 -------------
