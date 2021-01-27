@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+    <meta charset="utf-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>KGTorrent package &mdash; KGTorrent documentation</title>
+
+
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css"/>
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css"/>
+
+
+    <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+    <![endif]-->
+
+
+    <script type="text/javascript" id="documentation_options" data-url_root="./"
+            src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+
+    <link rel="index" title="Index" href="genindex.html"/>
+    <link rel="search" title="Search" href="search.html"/>
+    <link rel="prev" title="&lt;no title&gt;" href="modules.html"/>
+</head>
+
+<body class="wy-body-for-nav">
+
+
+<div class="wy-grid-for-nav">
+
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+        <div class="wy-side-scroll">
+            <div class="wy-side-nav-search">
+
+
+                <a href="index.html" class="icon icon-home" alt="Documentation Home"> KGTorrent
+
+
+                </a>
+
+
+                <div role="search">
+                    <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+                        <input type="text" name="q" placeholder="Search docs"/>
+                        <input type="hidden" name="check_keywords" value="yes"/>
+                        <input type="hidden" name="area" value="default"/>
+                    </form>
+                </div>
+
+
+            </div>
+
+
+            <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+
+
+                <p class="caption"><span class="caption-text">Contents:</span></p>
+                <ul class="current">
+                    <li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="usage/replicating.html">Replicating the
+                        collection</a></li>
+                    <li class="toctree-l1"><a class="reference internal" href="usage/refreshing.html">Refreshing the
+                        collection</a></li>
+                    <li class="toctree-l1"><a class="reference internal" href="usage/using.html">Using the
+                        collection</a></li>
+                    <li class="toctree-l1 current"><a class="current reference internal" href="#">KGTorrent package</a>
+                        <ul>
+                            <li class="toctree-l2"><a class="reference internal"
+                                                      href="#module-KGTorrent.config">config</a></li>
+                            <li class="toctree-l2"><a class="reference internal"
+                                                      href="#module-KGTorrent.db_connection_handler">db_connection_handler</a>
+                            </li>
+                            <li class="toctree-l2"><a class="reference internal"
+                                                      href="#module-KGTorrent.build_db_schema">buildDbSchema</a></li>
+                            <li class="toctree-l2"><a class="reference internal" href="#module-KGTorrent.populate_db">populateDb</a>
+                            </li>
+                            <li class="toctree-l2"><a class="reference internal" href="#module-KGTorrent.downloader">downloader</a>
+                            </li>
+                            <li class="toctree-l2"><a class="reference internal" href="#module-KGTorrent.exceptions">exceptions</a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+
+
+            </div>
+
+        </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+
+        <nav class="wy-nav-top" aria-label="top navigation">
+
+            <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+            <a href="index.html">KGTorrent</a>
+
+        </nav>
+
+
+        <div class="wy-nav-content">
+
+            <div class="rst-content">
+
+
+                <div role="navigation" aria-label="breadcrumbs navigation">
+
+                    <ul class="wy-breadcrumbs">
+
+                        <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+
+                        <li><a href="modules.html">&lt;no title&gt;</a> &raquo;</li>
+
+                        <li>KGTorrent package</li>
+
+
+                        <li class="wy-breadcrumbs-aside">
+
+
+                            <a href="_sources/KGTorrent.rst.txt" rel="nofollow"> View page source</a>
+
+
+                        </li>
+
+                    </ul>
+
+
+                    <hr/>
+                </div>
+                <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+                    <div itemprop="articleBody">
+
+                        <div class="section" id="module-KGTorrent">
+                            <span id="kgtorrent-package"></span>
+                            <h1>KGTorrent package<a class="headerlink" href="#module-KGTorrent"
+                                                    title="Permalink to this headline">¶</a></h1>
+                            <div class="section" id="module-KGTorrent.config">
+                                <span id="config"></span>
+                                <h2>config<a class="headerlink" href="#module-KGTorrent.config"
+                                             title="Permalink to this headline">¶</a></h2>
+                                <p>This is the configuration file of KGTorrent.</p>
+                                <p>Here the main variables of the program are set, mostly by reading their values from
+                                    environment variables.</p>
+                                <p>See <a class="reference internal" href="configuration.html#configuration"><span
+                                        class="std std-ref">Configuration</span></a> for details on the environment
+                                    variables that must be set to run KGTorrent.</p>
+                            </div>
+                            <div class="section" id="module-KGTorrent.db_connection_handler">
+                                <span id="db-connection-handler"></span>
+                                <h2>db_connection_handler<a class="headerlink"
+                                                            href="#module-KGTorrent.db_connection_handler"
+                                                            title="Permalink to this headline">¶</a></h2>
+                                <p>This module defines the class that handles the connection to the database via
+                                    SQLAlchemy.</p>
+                                <dl class="py class">
+                                    <dt id="KGTorrent.db_connection_handler.DbConnectionHandler">
+                                        <em class="property">class </em><code class="sig-prename descclassname">KGTorrent.db_connection_handler.</code><code
+                                            class="sig-name descname">DbConnectionHandler</code><a class="headerlink"
+                                                                                                   href="#KGTorrent.db_connection_handler.DbConnectionHandler"
+                                                                                                   title="Permalink to this definition">¶</a>
+                                    </dt>
+                                    <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span
+                                            class="pre">object</span></code></p>
+                                        <dl class="py method">
+                                            <dt id="KGTorrent.db_connection_handler.DbConnectionHandler.create_sqlalchemy_engine">
+                                                <code class="sig-name descname">create_sqlalchemy_engine</code><span
+                                                    class="sig-paren">(</span><span class="sig-paren">)</span><a
+                                                    class="headerlink"
+                                                    href="#KGTorrent.db_connection_handler.DbConnectionHandler.create_sqlalchemy_engine"
+                                                    title="Permalink to this definition">¶</a></dt>
+                                            <dd><p>By using the variables set in <a class="reference internal"
+                                                                                    href="#module-KGTorrent.config"
+                                                                                    title="KGTorrent.config"><code
+                                                    class="xref py py-mod docutils literal notranslate"><span
+                                                    class="pre">KGTorrent.config</span></code></a>,
+                                                this function creates and returns an SQLAlchemy engine for the MySQL
+                                                KGTorrent database.</p>
+                                            </dd>
+                                        </dl>
+
+                                    </dd>
+                                </dl>
+
+                            </div>
+                            <div class="section" id="module-KGTorrent.build_db_schema">
+                                <span id="builddbschema"></span>
+                                <h2>buildDbSchema<a class="headerlink" href="#module-KGTorrent.build_db_schema"
+                                                    title="Permalink to this headline">¶</a></h2>
+                                <p>This module builds the schema for the companion database of the KGTorrent
+                                    dataset.</p>
+                                <dl class="py class">
+                                    <dt id="KGTorrent.build_db_schema.DbSchema">
+                                        <em class="property">class </em><code class="sig-prename descclassname">KGTorrent.build_db_schema.</code><code
+                                            class="sig-name descname">DbSchema</code><span class="sig-paren">(</span><em
+                                            class="sig-param"><span class="n">sqlalchemy_engine</span></em><span
+                                            class="sig-paren">)</span><a class="headerlink"
+                                                                         href="#KGTorrent.build_db_schema.DbSchema"
+                                                                         title="Permalink to this definition">¶</a></dt>
+                                    <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span
+                                            class="pre">object</span></code></p>
+                                        <p>The constructor of this class builds the schema of the KGTorrent MySQL
+                                            database.</p>
+                                        <dl class="field-list simple">
+                                            <dt class="field-odd">Parameters</dt>
+                                            <dd class="field-odd"><p><strong>sqlalchemy_engine</strong> (<em>Engine</em>)
+                                                – the SQLAlchemy engine used to connect to the database.</p>
+                                            </dd>
+                                        </dl>
+                                    </dd>
+                                </dl>
+
+                            </div>
+                            <div class="section" id="module-KGTorrent.populate_db">
+                                <span id="populatedb"></span>
+                                <h2>populateDb<a class="headerlink" href="#module-KGTorrent.populate_db"
+                                                 title="Permalink to this headline">¶</a></h2>
+                                <p>This module maps data from the <a class="reference external"
+                                                                     href="https://www.kaggle.com/kaggle/meta-kaggle">MetaKaggle
+                                    dataset</a>
+                                    to the KGTorrent relational database.</p>
+                                <dl class="py class">
+                                    <dt id="KGTorrent.populate_db.MetaKagglePreprocessor">
+                                        <em class="property">class </em><code class="sig-prename descclassname">KGTorrent.populate_db.</code><code
+                                            class="sig-name descname">MetaKagglePreprocessor</code><span
+                                            class="sig-paren">(</span><em class="sig-param"><span class="n">constraints_file_path</span></em>,
+                                        <em class="sig-param"><span class="n">meta_kaggle_path</span></em>, <em
+                                            class="sig-param"><span class="n">sqlalchemy_engine</span></em><span
+                                            class="sig-paren">)</span><a class="headerlink"
+                                                                         href="#KGTorrent.populate_db.MetaKagglePreprocessor"
+                                                                         title="Permalink to this definition">¶</a></dt>
+                                    <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span
+                                            class="pre">object</span></code></p>
+                                        <p>This class handles the preprocessing of data from the Meta Kaggle
+                                            dataset.</p>
+                                        <p>Foreign key constraints in Meta Kaggle cannot always be resolved as there are
+                                            many missing rows in the dataset
+                                            (maybe because the related data are not publicly available on the Kaggle
+                                            platform).
+                                            To overcome this issue and enforce a sound relational structure in the
+                                            KGTorrent database, before importing
+                                            Meta Kaggle tables we preprocess them by using a recursive procedure that
+                                            removes rows with unresolvable references.</p>
+                                        <dl class="py method">
+                                            <dt id="KGTorrent.populate_db.MetaKagglePreprocessor.clean_referencing_table">
+                                                <code class="sig-name descname">clean_referencing_table</code><span
+                                                    class="sig-paren">(</span><em class="sig-param"><span class="n">referencing</span></em>,
+                                                <em class="sig-param"><span class="n">referenced</span></em><span
+                                                    class="sig-paren">)</span><a class="headerlink"
+                                                                                 href="#KGTorrent.populate_db.MetaKagglePreprocessor.clean_referencing_table"
+                                                                                 title="Permalink to this definition">¶</a>
+                                            </dt>
+                                            <dd><p>Given two tables, a referencing table and a referenced table, it
+                                                cleans the former by removing all rows pointing
+                                                to tuples from the second that cannot be found.</p>
+                                                <dl class="field-list simple">
+                                                    <dt class="field-odd">Parameters</dt>
+                                                    <dd class="field-odd">
+                                                        <ul class="simple">
+                                                            <li><p><strong>referencing</strong> – the table to be
+                                                                cleaned.</p></li>
+                                                            <li><p><strong>referenced</strong> – the table whose rows
+                                                                are referenced by the table to be cleaned.</p></li>
+                                                        </ul>
+                                                    </dd>
+                                                </dl>
+                                            </dd>
+                                        </dl>
+
+                                        <dl class="py method">
+                                            <dt id="KGTorrent.populate_db.MetaKagglePreprocessor.load_table">
+                                                <code class="sig-name descname">load_table</code><span
+                                                    class="sig-paren">(</span><em class="sig-param"><span class="n">table_name</span></em>,
+                                                <em class="sig-param"><span class="n">is_ready_for_db</span><span
+                                                        class="o">=</span><span
+                                                        class="default_value">False</span></em><span
+                                                    class="sig-paren">)</span><a class="headerlink"
+                                                                                 href="#KGTorrent.populate_db.MetaKagglePreprocessor.load_table"
+                                                                                 title="Permalink to this definition">¶</a>
+                                            </dt>
+                                            <dd><p>This method loads Meta Kaggle <code
+                                                    class="docutils literal notranslate"><span
+                                                    class="pre">.csv</span></code> files and performs basic
+                                                preprocessing steps
+                                                (e.g., it calls the <code class="docutils literal notranslate"><span
+                                                        class="pre">parse_dates</span></code> method to covert string
+                                                dates in a suitable date format).</p>
+                                                <p>It also performs specific adjustments required by a couple of Meta
+                                                    Kaggle tables, namely
+                                                    <code class="docutils literal notranslate"><span class="pre">ForumMessageVotes</span></code>
+                                                    and <code class="docutils literal notranslate"><span class="pre">Submissions</span></code>.
+                                                </p>
+                                                <dl class="field-list simple">
+                                                    <dt class="field-odd">Parameters</dt>
+                                                    <dd class="field-odd"><p><strong>table_name</strong> – the name of
+                                                        the <code class="docutils literal notranslate"><span
+                                                                class="pre">.csv</span></code> table to be loaded from
+                                                        the Meta Kaggle dataset.</p>
+                                                    </dd>
+                                                </dl>
+                                            </dd>
+                                        </dl>
+
+                                        <dl class="py method">
+                                            <dt id="KGTorrent.populate_db.MetaKagglePreprocessor.process_referencing_table">
+                                                <code class="sig-name descname">process_referencing_table</code><span
+                                                    class="sig-paren">(</span><em class="sig-param"><span class="n">referencing</span></em><span
+                                                    class="sig-paren">)</span><a class="headerlink"
+                                                                                 href="#KGTorrent.populate_db.MetaKagglePreprocessor.process_referencing_table"
+                                                                                 title="Permalink to this definition">¶</a>
+                                            </dt>
+                                            <dd><p>This method is invoked recursively to drop rows with unresolvable
+                                                foreign key constraints.
+                                                It uses <code class="xref py py-func docutils literal notranslate"><span
+                                                        class="pre">MetaKagglePreprocessor.clean_referencing_table()</span></code>
+                                                to do the actual cleaning.
+                                                Its purpose is to traverse the table relationships graph to take full
+                                                relationship chains into account.
+                                                It stops when it detects cycles.</p>
+                                                <dl class="field-list simple">
+                                                    <dt class="field-odd">Parameters</dt>
+                                                    <dd class="field-odd"><p><strong>referencing</strong> – the table
+                                                        with foreign keys to be analyzed.</p>
+                                                    </dd>
+                                                </dl>
+                                            </dd>
+                                        </dl>
+
+                                        <dl class="py method">
+                                            <dt id="KGTorrent.populate_db.MetaKagglePreprocessor.write_table">
+                                                <code class="sig-name descname">write_table</code><span
+                                                    class="sig-paren">(</span><em class="sig-param"><span class="n">table_name</span></em>,
+                                                <em class="sig-param"><span class="n">df</span><span
+                                                        class="o">=</span><span
+                                                        class="default_value">None</span></em><span
+                                                    class="sig-paren">)</span><a class="headerlink"
+                                                                                 href="#KGTorrent.populate_db.MetaKagglePreprocessor.write_table"
+                                                                                 title="Permalink to this definition">¶</a>
+                                            </dt>
+                                            <dd><p>This method writes preprocessed tables to the database by leveraging
+                                                the <code class="docutils literal notranslate"><span class="pre">pandas.DataFrame.to_sql</span></code>
+                                                method.</p>
+                                                <dl class="field-list simple">
+                                                    <dt class="field-odd">Parameters</dt>
+                                                    <dd class="field-odd"><p><strong>table_name</strong> – the name of
+                                                        the table to be written to the database.</p>
+                                                    </dd>
+                                                </dl>
+                                            </dd>
+                                        </dl>
+
+                                    </dd>
+                                </dl>
+
+                                <dl class="py function">
+                                    <dt id="KGTorrent.populate_db.check_table_emptiness">
+                                        <code class="sig-prename descclassname">KGTorrent.populate_db.</code><code
+                                            class="sig-name descname">check_table_emptiness</code><span
+                                            class="sig-paren">(</span><em class="sig-param"><span
+                                            class="n">table_name</span></em>, <em class="sig-param"><span class="n">engine</span></em><span
+                                            class="sig-paren">)</span><a class="headerlink"
+                                                                         href="#KGTorrent.populate_db.check_table_emptiness"
+                                                                         title="Permalink to this definition">¶</a></dt>
+                                    <dd><p>This utility function checks whether the database table named <code
+                                            class="docutils literal notranslate"><span
+                                            class="pre">table_name</span></code> is empty.</p>
+                                        <dl class="field-list simple">
+                                            <dt class="field-odd">Parameters</dt>
+                                            <dd class="field-odd">
+                                                <ul class="simple">
+                                                    <li><p><strong>table_name</strong> (<em>str</em>) – the name of the
+                                                        table to be checked, which corresponds to the name of the <code
+                                                                class="docutils literal notranslate"><span class="pre">.csv</span></code>
+                                                        file from which its data is derived (omitting the extension).
+                                                    </p></li>
+                                                    <li><p><strong>engine</strong> (<em>Engine</em>) – the SQLAlchemy
+                                                        engine used to connect to the KGTorrent database.</p></li>
+                                                </ul>
+                                            </dd>
+                                            <dt class="field-even">Returns</dt>
+                                            <dd class="field-even"><p>True if the database table is empty, False
+                                                otherwise.</p>
+                                            </dd>
+                                            <dt class="field-odd">Return type</dt>
+                                            <dd class="field-odd"><p>bool</p>
+                                            </dd>
+                                        </dl>
+                                    </dd>
+                                </dl>
+
+                                <dl class="py function">
+                                    <dt id="KGTorrent.populate_db.parse_dates">
+                                        <code class="sig-prename descclassname">KGTorrent.populate_db.</code><code
+                                            class="sig-name descname">parse_dates</code><span class="sig-paren">(</span><em
+                                            class="sig-param"><span class="n">df</span></em><span
+                                            class="sig-paren">)</span><a class="headerlink"
+                                                                         href="#KGTorrent.populate_db.parse_dates"
+                                                                         title="Permalink to this definition">¶</a></dt>
+                                    <dd><p>This utility function takes a dataframe with columns containing unparsed
+                                        dates and parses them by leveraging the
+                                        <code class="docutils literal notranslate"><span
+                                                class="pre">pandas.to_datetime</span></code> function.</p>
+                                        <dl class="field-list simple">
+                                            <dt class="field-odd">Parameters</dt>
+                                            <dd class="field-odd"><p><strong>df</strong> – the dataframe with date
+                                                columns to be parsed. Date columns are easily recognized because, in the
+                                                Meta Kaggle dataset, their names always end with the <code
+                                                        class="docutils literal notranslate"><span
+                                                        class="pre">Date</span></code> suffix.</p>
+                                            </dd>
+                                        </dl>
+                                        <p>Returns: the dataframe with parsed dates.</p>
+                                    </dd>
+                                </dl>
+
+                                <dl class="py function">
+                                    <dt id="KGTorrent.populate_db.populate_db">
+                                        <code class="sig-prename descclassname">KGTorrent.populate_db.</code><code
+                                            class="sig-name descname">populate_db</code><span class="sig-paren">(</span><em
+                                            class="sig-param"><span class="n">mk</span></em><span
+                                            class="sig-paren">)</span><a class="headerlink"
+                                                                         href="#KGTorrent.populate_db.populate_db"
+                                                                         title="Permalink to this definition">¶</a></dt>
+                                    <dd><p>This function handles the whole database population process.
+                                        First, it runs the recursive preprocessing method of <a
+                                                class="reference internal"
+                                                href="#KGTorrent.populate_db.MetaKagglePreprocessor"
+                                                title="KGTorrent.populate_db.MetaKagglePreprocessor"><code
+                                                class="xref py py-class docutils literal notranslate"><span class="pre">MetaKagglePreprocessor</span></code></a>
+                                        until foreign key constraints are
+                                        solved for all tables. Then, it writes the preprocessed tables to the database.
+                                        Finally, it prints summary stats
+                                        about the filtering process to stdout.</p>
+                                        <dl class="field-list simple">
+                                            <dt class="field-odd">Parameters</dt>
+                                            <dd class="field-odd"><p><strong>mk</strong> – an instance of <a
+                                                    class="reference internal"
+                                                    href="#KGTorrent.populate_db.MetaKagglePreprocessor"
+                                                    title="KGTorrent.populate_db.MetaKagglePreprocessor"><code
+                                                    class="xref py py-class docutils literal notranslate"><span
+                                                    class="pre">MetaKagglePreprocessor</span></code></a></p>
+                                            </dd>
+                                        </dl>
+                                    </dd>
+                                </dl>
+
+                                <dl class="py function">
+                                    <dt id="KGTorrent.populate_db.set_foreign_keys">
+                                        <code class="sig-prename descclassname">KGTorrent.populate_db.</code><code
+                                            class="sig-name descname">set_foreign_keys</code><span
+                                            class="sig-paren">(</span><em class="sig-param"><span class="n">sqlalchemy_engine</span></em>,
+                                        <em class="sig-param"><span class="n">constraints_file_path</span></em><span
+                                            class="sig-paren">)</span><a class="headerlink"
+                                                                         href="#KGTorrent.populate_db.set_foreign_keys"
+                                                                         title="Permalink to this definition">¶</a></dt>
+                                    <dd><p>After the database population, this function sets the foreign key
+                                        constraints.</p>
+                                        <dl class="field-list simple">
+                                            <dt class="field-odd">Parameters</dt>
+                                            <dd class="field-odd">
+                                                <ul class="simple">
+                                                    <li><p><strong>sqlalchemy_engine</strong> – the SQLAlchemy engine
+                                                        used to connect to the KGTorrent database.</p></li>
+                                                    <li><p><strong>constraints_file_path</strong> – the path to the
+                                                        <code class="docutils literal notranslate"><span class="pre">.csv</span></code>
+                                                        file containing information on the foreign key constraints to be
+                                                        set. By default, it is located at <code
+                                                                class="docutils literal notranslate"><span class="pre">/data/fk_constraints_data.csv</span></code>.
+                                                    </p></li>
+                                                </ul>
+                                            </dd>
+                                        </dl>
+                                    </dd>
+                                </dl>
+
+                            </div>
+                            <div class="section" id="module-KGTorrent.downloader">
+                                <span id="downloader"></span>
+                                <h2>downloader<a class="headerlink" href="#module-KGTorrent.downloader"
+                                                 title="Permalink to this headline">¶</a></h2>
+                                <p>This module handles the actual download of Jupyter notebooks from Kaggle.</p>
+                                <dl class="py class">
+                                    <dt id="KGTorrent.downloader.Downloader">
+                                        <em class="property">class </em><code class="sig-prename descclassname">KGTorrent.downloader.</code><code
+                                            class="sig-name descname">Downloader</code><span
+                                            class="sig-paren">(</span><em class="sig-param"><span class="n">sqlalchemy_engine</span></em>,
+                                        <em class="sig-param"><span class="n">download_config</span></em>, <em
+                                            class="sig-param"><span class="n">strategy</span><span
+                                            class="o">=</span><span class="default_value">'HTTP'</span></em><span
+                                            class="sig-paren">)</span><a class="headerlink"
+                                                                         href="#KGTorrent.downloader.Downloader"
+                                                                         title="Permalink to this definition">¶</a></dt>
+                                    <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span
+                                            class="pre">object</span></code></p>
+                                        <p>The <code class="docutils literal notranslate"><span
+                                                class="pre">Downloader</span></code> class handles the download of
+                                            Jupyter notebooks from Kaggle.
+                                            First, it queries the database to get notebook slugs and identifiers and
+                                            then it requests
+                                            notebooks from Kaggle using one of the following two strategies:</p>
+                                        <dl class="simple">
+                                            <dt><code class="docutils literal notranslate"><span class="pre">HTTP</span></code>
+                                            </dt>
+                                            <dd><p>to download full notebooks via HTTP requests;</p>
+                                            </dd>
+                                            <dt><code class="docutils literal notranslate"><span class="pre">API</span></code>
+                                            </dt>
+                                            <dd><p>to download notebooks via calls to the official Kaggle API;
+                                                generally, Jupyter notebooks downloaded with this strategy miss the
+                                                output of code cells.</p>
+                                            </dd>
+                                        </dl>
+                                        <p>Notebooks that are already present in the download folder are skipped.
+                                            During the <code class="docutils literal notranslate"><span class="pre">refresh</span></code>
+                                            procedure, notebooks that are already present in the download folder
+                                            but that are no longer referenced in the KGTorrent database are deleted.</p>
+                                        <dl class="field-list simple">
+                                            <dt class="field-odd">Parameters</dt>
+                                            <dd class="field-odd">
+                                                <ul class="simple">
+                                                    <li><p><strong>sqlalchemy_engine</strong> – the SQLAlchemy engine
+                                                        used to connect to the KGTorrent database.</p></li>
+                                                    <li><p><strong>download_config</strong> – the download
+                                                        configuration, set up in <a class="reference internal"
+                                                                                    href="#module-KGTorrent.config"
+                                                                                    title="KGTorrent.config"><code
+                                                                class="xref py py-mod docutils literal notranslate"><span
+                                                                class="pre">KGTorrent.config</span></code></a>.</p></li>
+                                                    <li><p><strong>strategy</strong> – the download strategy (<code
+                                                            class="docutils literal notranslate"><span
+                                                            class="pre">HTTP</span></code> or <code
+                                                            class="docutils literal notranslate"><span
+                                                            class="pre">API</span></code>).</p></li>
+                                                </ul>
+                                            </dd>
+                                        </dl>
+                                    </dd>
+                                </dl>
+
+                            </div>
+                            <div class="section" id="module-KGTorrent.exceptions">
+                                <span id="exceptions"></span>
+                                <h2>exceptions<a class="headerlink" href="#module-KGTorrent.exceptions"
+                                                 title="Permalink to this headline">¶</a></h2>
+                                <p>This module defines exceptions that might be risen while building/updating KGTorrent
+                                    using this package.</p>
+                                <dl class="py exception">
+                                    <dt id="KGTorrent.exceptions.Error">
+                                        <em class="property">exception </em><code class="sig-prename descclassname">KGTorrent.exceptions.</code><code
+                                            class="sig-name descname">Error</code><a class="headerlink"
+                                                                                     href="#KGTorrent.exceptions.Error"
+                                                                                     title="Permalink to this definition">¶</a>
+                                    </dt>
+                                    <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span
+                                            class="pre">Exception</span></code></p>
+                                        <p>Base class for exceptions in this package.</p>
+                                    </dd>
+                                </dl>
+
+                                <dl class="py exception">
+                                    <dt id="KGTorrent.exceptions.TableNotPreprocessedError">
+                                        <em class="property">exception </em><code class="sig-prename descclassname">KGTorrent.exceptions.</code><code
+                                            class="sig-name descname">TableNotPreprocessedError</code><span
+                                            class="sig-paren">(</span><em class="sig-param"><span
+                                            class="n">message</span></em><span class="sig-paren">)</span><a
+                                            class="headerlink" href="#KGTorrent.exceptions.TableNotPreprocessedError"
+                                            title="Permalink to this definition">¶</a></dt>
+                                    <dd><p>Bases: <a class="reference internal" href="#KGTorrent.exceptions.Error"
+                                                     title="KGTorrent.exceptions.Error"><code
+                                            class="xref py py-class docutils literal notranslate"><span class="pre">KGTorrent.exceptions.Error</span></code></a>
+                                    </p>
+                                        <p>Exception raised when the table that was just read was supposed to be already
+                                            preprocessed
+                                            (and serialized to .bz2 pickle file) but is not.</p>
+                                        <dl class="py attribute">
+                                            <dt id="KGTorrent.exceptions.TableNotPreprocessedError.message">
+                                                <code class="sig-name descname">message</code><a class="headerlink"
+                                                                                                 href="#KGTorrent.exceptions.TableNotPreprocessedError.message"
+                                                                                                 title="Permalink to this definition">¶</a>
+                                            </dt>
+                                            <dd><p>short message containing the explanation of the error.</p>
+                                                <dl class="field-list simple">
+                                                    <dt class="field-odd">Type</dt>
+                                                    <dd class="field-odd"><p>str</p>
+                                                    </dd>
+                                                </dl>
+                                            </dd>
+                                        </dl>
+
+                                    </dd>
+                                </dl>
+
+                            </div>
+                        </div>
+
+
+                    </div>
+
+                </div>
+                <footer>
+
+                    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+
+
+                        <a href="modules.html" class="btn btn-neutral float-left" title="&lt;no title&gt;" accesskey="p"
+                           rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+
+                    </div>
+
+
+                    <hr/>
+
+                    <div role="contentinfo">
+                        <p>
+
+                            &copy; Copyright 2021, Collaborative Development Group
+
+                        </p>
+                    </div>
+
+
+                    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+
+                    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+
+                    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+
+                </footer>
+
+            </div>
+        </div>
+
+    </section>
+
+</div>
+
+
+<script type="text/javascript">
+    jQuery(function () {
+        SphinxRtdTheme.Navigation.enable(true);
+    });
+</script>
+
+
+</body>
+</html>
