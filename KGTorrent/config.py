@@ -1,10 +1,13 @@
 """
-Main configuration file.
-Place any further config info here.
+This is the configuration file of KGTorrent.
+
+Here the main variables of the program are set, mostly by reading their values from environment variables.
+
+See :ref:`configuration` for details on the environment variables that must be set to run KGTorrent.
 """
 
-import os
 import logging
+import os
 import time
 
 # MySQL DB configuration

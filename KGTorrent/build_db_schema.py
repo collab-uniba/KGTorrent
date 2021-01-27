@@ -1,12 +1,4 @@
-"""
-This module builds the db schema.
-
-N.B.: Before executing this script, you must create the KGTorrent database
-by running the following command in your MySQL client::
-
-    CREATE DATABASE IF NOT EXISTS kaggle_torrent CHARACTER SET utf8mb4;
-
-"""
+"""This module builds the schema for the companion database of the KGTorrent dataset."""
 
 from sqlalchemy import (MetaData, Table, Column, Integer, String, Float,
                         DateTime, Boolean, Text, BigInteger)
@@ -16,25 +8,15 @@ from KGTorrent.db_connection_handler import DbConnectionHandler
 
 
 class DbSchema:
+    """
+    The constructor of this class builds the schema of the KGTorrent MySQL database.
+
+    Args:
+                sqlalchemy_engine (Engine): the SQLAlchemy engine used to connect to the database.
+
+    """
 
     def __init__(self, sqlalchemy_engine):
-        """
-            By constructing an object of type DbSchema,
-            this constructor builds the schema of the KGTorrent database.
-
-            N.B.: To be able to call this constructor, the KGTorrent database
-            must already exist in your DBMS.
-            If it does not exist yet, run the following command in your MySQL client::
-
-                CREATE DATABASE IF NOT EXISTS kaggle_torrent CHARACTER SET utf8mb4;
-
-            Args:
-                sqlalchemy_engine (Engine): the SQLAlchemy engine used to connect to the KGTorrent database
-
-            """
-
-        # TODO: this class should implement the singleton pattern.
-
         # Create the metadata object
         metadata = MetaData()
 
