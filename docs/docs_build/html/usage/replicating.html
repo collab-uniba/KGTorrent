@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+    <meta charset="utf-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Replicating the collection &mdash; KGTorrent documentation</title>
+
+
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css"/>
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css"/>
+
+
+    <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+    <![endif]-->
+
+
+    <script type="text/javascript" id="documentation_options" data-url_root="../"
+            src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+
+    <link rel="index" title="Index" href="../genindex.html"/>
+    <link rel="search" title="Search" href="../search.html"/>
+    <link rel="next" title="Refreshing the collection" href="refreshing.html"/>
+    <link rel="prev" title="Configuration" href="../configuration.html"/>
+</head>
+
+<body class="wy-body-for-nav">
+
+
+<div class="wy-grid-for-nav">
+
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+        <div class="wy-side-scroll">
+            <div class="wy-side-nav-search">
+
+
+                <a href="../index.html" class="icon icon-home" alt="Documentation Home"> KGTorrent
+
+
+                </a>
+
+
+                <div role="search">
+                    <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+                        <input type="text" name="q" placeholder="Search docs"/>
+                        <input type="hidden" name="check_keywords" value="yes"/>
+                        <input type="hidden" name="area" value="default"/>
+                    </form>
+                </div>
+
+
+            </div>
+
+
+            <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+
+
+                <p class="caption"><span class="caption-text">Contents:</span></p>
+                <ul class="current">
+                    <li class="toctree-l1"><a class="reference internal" href="../configuration.html">Configuration</a>
+                    </li>
+                    <li class="toctree-l1 current"><a class="current reference internal" href="#">Replicating the
+                        collection</a></li>
+                    <li class="toctree-l1"><a class="reference internal" href="refreshing.html">Refreshing the
+                        collection</a></li>
+                    <li class="toctree-l1"><a class="reference internal" href="using.html">Using the collection</a></li>
+                    <li class="toctree-l1"><a class="reference internal" href="../KGTorrent.html">KGTorrent package</a>
+                    </li>
+                </ul>
+
+
+            </div>
+
+        </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+
+        <nav class="wy-nav-top" aria-label="top navigation">
+
+            <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+            <a href="../index.html">KGTorrent</a>
+
+        </nav>
+
+
+        <div class="wy-nav-content">
+
+            <div class="rst-content">
+
+
+                <div role="navigation" aria-label="breadcrumbs navigation">
+
+                    <ul class="wy-breadcrumbs">
+
+                        <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+
+                        <li>Replicating the collection</li>
+
+
+                        <li class="wy-breadcrumbs-aside">
+
+
+                            <a href="../_sources/usage/replicating.rst.txt" rel="nofollow"> View page source</a>
+
+
+                        </li>
+
+                    </ul>
+
+
+                    <hr/>
+                </div>
+                <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+                    <div itemprop="articleBody">
+
+                        <div class="section" id="replicating-the-collection">
+                            <h1>Replicating the collection<a class="headerlink" href="#replicating-the-collection"
+                                                             title="Permalink to this headline">¶</a></h1>
+                            <p>To replicate our collection, you first have to download and uncompress the Meta Kaggle
+                                version that we used to build the KGTorrent companion database (retrieved on October 27,
+                                2020). Since it is no more available on Kaggle, we share it as part of the <a
+                                        class="reference external"
+                                        href="http://neo.di.uniba.it:8080/share.cgi?ssid=0syF2vm">dataset package</a>:
+                                it is the compressed archive named <code class="docutils literal notranslate"><span
+                                        class="pre">MetaKaggle27Oct2020.tar.bz2</span></code>.</p>
+                            <p>Once Meta Kaggle is available on your machine and the corresponding environment variable
+                                has been set, you can start the creation process by issuing the following command:</p>
+                            <div class="highlight-default notranslate">
+                                <div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">kgtorrent</span><span
+                                        class="o">.</span><span class="n">py</span> <span class="n">init</span> <span
+                                        class="o">--</span><span class="n">strategy</span> <span class="n">HTTP</span>
+</pre>
+                                </div>
+                            </div>
+                            <p>The <code class="docutils literal notranslate"><span class="pre">--strategy</span></code>
+                                argument determines whether the notebooks will be downloaded via <code
+                                        class="docutils literal notranslate"><span class="pre">HTTP</span></code>
+                                requests or via <code class="docutils literal notranslate"><span class="pre">API</span></code>
+                                calls. Notebooks downloaded via the official Kaggle API miss the output of code cells,
+                                while those downloaded via HTTP requests are complete.</p>
+                            <p>Once you start the creation process, KGTorrent will go through the following steps:</p>
+                            <ol class="arabic simple">
+                                <li><p><em>Database initialization</em>: a new MySQL database is created and set up with
+                                    the data schema required to store Meta Kaggle data.</p></li>
+                                <li><p><em>Meta Kaggle preprocessing</em>: Meta Kaggle is an archive containing 29
+                                    tables in the <code class="docutils literal notranslate"><span
+                                            class="pre">.csv</span></code> file format. As of today, it cannot be
+                                    imported in a relational database without incurring in referential integrity
+                                    violations. This happens because many of the tables miss some rows, as they probably
+                                    contain private information. Our program overcomes this issue by performing a
+                                    pre-processing step in which rows with unresolved foreing keys are dropped from each
+                                    Meta Kaggle table.</p></li>
+                                <li><p><em>Database population</em>: the MySQL database is populated with information
+                                    from the filtered Meta Kaggle tables.</p></li>
+                                <li><p><em>Notebooks download</em>: the Jupyter notebooks are downloaded from Kaggle
+                                    using the preferred strategy (HTTP or API). An SQL query is used to retrieve the
+                                    list of notebooks to be downaloded from the MySQL database.</p></li>
+                            </ol>
+                        </div>
+
+
+                    </div>
+
+                </div>
+                <footer>
+
+                    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+
+                        <a href="refreshing.html" class="btn btn-neutral float-right" title="Refreshing the collection"
+                           accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+
+
+                        <a href="../configuration.html" class="btn btn-neutral float-left" title="Configuration"
+                           accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+
+                    </div>
+
+
+                    <hr/>
+
+                    <div role="contentinfo">
+                        <p>
+
+                            &copy; Copyright 2021, Collaborative Development Group
+
+                        </p>
+                    </div>
+
+
+                    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+
+                    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+
+                    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+
+                </footer>
+
+            </div>
+        </div>
+
+    </section>
+
+</div>
+
+
+<script type="text/javascript">
+    jQuery(function () {
+        SphinxRtdTheme.Navigation.enable(true);
+    });
+</script>
+
+
+</body>
+</html>

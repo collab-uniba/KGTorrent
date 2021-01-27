@@ -17,8 +17,8 @@ sys.path.insert(0, os.path.abspath('..'))
 
 # -- Project information -----------------------------------------------------
 
-project = 'KaggleTorrent'
-copyright = '2020, Luigi Quaranta'
+project = 'KGTorrent'
+copyright = '2021, Collaborative Development Group'
 author = 'Luigi Quaranta'
 
 # -- General configuration ---------------------------------------------------
