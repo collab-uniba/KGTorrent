@@ -1,25 +1,42 @@
 """
-This module does.
+This module handles the actual download of Jupyter notebooks from Kaggle.
 """
 
+import logging
 import time
+from pathlib import Path
 
 import pandas as pd
 import requests
-from pathlib import Path
 from kaggle.api.kaggle_api_extended import KaggleApi
-
 from tqdm import tqdm
-import logging
 
 import KGTorrent.config as config
-
 # TODO: remove those imports after testing
 from KGTorrent.db_connection_handler import DbConnectionHandler
 
+
 class Downloader:
     """
+    The ``Downloader`` class handles the download of Jupyter notebooks from Kaggle.
+    First, it queries the database to get notebook slugs and identifiers and then it requests
+    notebooks from Kaggle using one of the following two strategies:
 
+    ``HTTP``
+        to download full notebooks via HTTP requests;
+
+    ``API``
+        to download notebooks via calls to the official Kaggle API;
+        generally, Jupyter notebooks downloaded with this strategy miss the output of code cells.
+
+    Notebooks that are already present in the download folder are skipped.
+    During the ``refresh`` procedure, notebooks that are already present in the download folder
+    but that are no longer referenced in the KGTorrent database are deleted.
+
+    Args:
+        sqlalchemy_engine: the SQLAlchemy engine used to connect to the KGTorrent database.
+        download_config: the download configuration, set up in :py:mod:`KGTorrent.config`.
+        strategy: the download strategy (``HTTP`` or ``API``).
     """
 
     def __init__(self, sqlalchemy_engine, download_config, strategy='HTTP'):

@@ -1,12 +1,12 @@
 """
-This module does the mapping of data from the MetaKaggle dataset to the KGTorrent relational database.
-Use it once you have created the database schema by running the `build_db_schema` module.
+This module maps data from the `MetaKaggle dataset <https://www.kaggle.com/kaggle/meta-kaggle>`_
+to the KGTorrent relational database.
 """
 
 import os
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 from sqlalchemy.exc import IntegrityError
 
 import KGTorrent.config as config
@@ -17,12 +17,11 @@ from KGTorrent.db_connection_handler import DbConnectionHandler
 
 def check_table_emptiness(table_name, engine):
     """
-    Checks if the database table of name `table_name` is empty.
+    This utility function checks whether the database table named ``table_name`` is empty.
 
     Args:
-        table_name (str): the name of the table to be checked,
-        which corresponds to the name of the .csv file from which its data is derived (omitting the extension).
-        engine (Engine): the SQLAlchemy engine used to connect to the KGTorrent database
+        table_name (str): the name of the table to be checked, which corresponds to the name of the ``.csv`` file from which its data is derived (omitting the extension).
+        engine (Engine): the SQLAlchemy engine used to connect to the KGTorrent database.
 
     Returns:
         bool: True if the database table is empty, False otherwise.
@@ -39,8 +38,16 @@ def check_table_emptiness(table_name, engine):
 
 
 def set_foreign_keys(sqlalchemy_engine, constraints_file_path):
+    """
+    After the database population, this function sets the foreign key constraints.
+
+    Args:
+        sqlalchemy_engine: the SQLAlchemy engine used to connect to the KGTorrent database.
+        constraints_file_path: the path to the ``.csv`` file containing information on the foreign key constraints to be set. By default, it is located at ``/data/fk_constraints_data.csv``.
+
+    """
+
     con = sqlalchemy_engine.connect()
-    # TODO: Read this file outside of this function (it is needed also by the MetaKagglePreprocessor constructor)
     constraints_df = pd.read_csv(constraints_file_path)
 
     for _, fk in constraints_df.iterrows():
@@ -60,7 +67,16 @@ def set_foreign_keys(sqlalchemy_engine, constraints_file_path):
 
 
 def parse_dates(df):
-    # TODO: document this method
+    """
+    This utility function takes a dataframe with columns containing unparsed dates and parses them by leveraging the
+    ``pandas.to_datetime`` function.
+
+    Args:
+        df: the dataframe with date columns to be parsed. Date columns are easily recognized because, in the Meta Kaggle dataset, their names always end with the ``Date`` suffix.
+
+    Returns: the dataframe with parsed dates.
+
+    """
 
     date_columns = [column for column in df.columns if column.endswith('Date')]
 
@@ -75,6 +91,14 @@ def parse_dates(df):
 # MAIN CLASS
 
 class MetaKagglePreprocessor:
+    """
+    This class handles the preprocessing of data from the Meta Kaggle dataset.
+
+    Foreign key constraints in Meta Kaggle cannot always be resolved as there are many missing rows in the dataset
+    (maybe because the related data are not publicly available on the Kaggle platform).
+    To overcome this issue and enforce a sound relational structure in the KGTorrent database, before importing
+    Meta Kaggle tables we preprocess them by using a recursive procedure that removes rows with unresolvable references.
+    """
 
     def __init__(self, constraints_file_path, meta_kaggle_path, sqlalchemy_engine):
 
@@ -83,7 +107,6 @@ class MetaKagglePreprocessor:
 
         # Dataframe containing constraints info:
         # (Referencing Table, Foreign Key, Referenced Table, Referenced Column)
-        # TODO: change to read_csv; maybe this file should be read outside of this constructor
         self.constraints_df = pd.read_csv(constraints_file_path)
         self.constraints_df['IsSolved'] = False
 
@@ -98,12 +121,17 @@ class MetaKagglePreprocessor:
 
     def load_table(self, table_name, is_ready_for_db=False):
         """
+        This method loads Meta Kaggle ``.csv`` files and performs basic preprocessing steps
+        (e.g., it calls the ``parse_dates`` method to covert string dates in a suitable date format).
+
+        It also performs specific adjustments required by a couple of Meta Kaggle tables, namely
+        ``ForumMessageVotes`` and ``Submissions``.
+
 
         Args:
-            table_name:
+            table_name: the name of the ``.csv`` table to be loaded from the Meta Kaggle dataset.
             is_ready_for_db:
-
-        Returns:
+            TODO: write documentation for the is_ready_for_db argument.
 
         """
 
@@ -163,12 +191,12 @@ class MetaKagglePreprocessor:
 
     def write_table(self, table_name, df=None):
         """
+        This method writes preprocessed tables to the database by leveraging the ``pandas.DataFrame.to_sql`` method.
 
         Args:
-            table_name:
+            table_name: the name of the table to be written to the database.
             df:
-
-        Returns:
+            TODO: write documentation for the df argument.
 
         """
 
@@ -189,11 +217,13 @@ class MetaKagglePreprocessor:
 
     def process_referencing_table(self, referencing):
         """
+        This method is invoked recursively to drop rows with unresolvable foreign key constraints.
+        It uses :func:`.MetaKagglePreprocessor.clean_referencing_table` to do the actual cleaning.
+        Its purpose is to traverse the table relationships graph to take full relationship chains into account.
+        It stops when it detects cycles.
 
         Args:
-            referencing:
-
-        Returns:
+            referencing: the table with foreign keys to be analyzed.
 
         """
 
@@ -221,12 +251,12 @@ class MetaKagglePreprocessor:
 
     def clean_referencing_table(self, referencing, referenced):
         """
+        Given two tables, a referencing table and a referenced table, it cleans the former by removing all rows pointing
+        to tuples from the second that cannot be found.
 
         Args:
-            referencing:
-            referenced:
-
-        Returns:
+            referencing: the table to be cleaned.
+            referenced: the table whose rows are referenced by the table to be cleaned.
 
         """
 
@@ -273,12 +303,13 @@ class MetaKagglePreprocessor:
 
 def populate_db(mk):
     """
+    This function handles the whole database population process.
+    First, it runs the recursive preprocessing method of :class:`.MetaKagglePreprocessor` until foreign key constraints are
+    solved for all tables. Then, it writes the preprocessed tables to the database. Finally, it prints summary stats
+    about the filtering process to stdout.
 
     Args:
-        mk:
-
-    Returns:
-
+        mk: an instance of :class:`.MetaKagglePreprocessor`
     """
 
     print("***************************")
