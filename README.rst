@@ -1,4 +1,4 @@
-Kaggle Torrent
+KGTorrent
 ==============
 The aim of this project is...
 
