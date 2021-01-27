@@ -98,6 +98,7 @@ class MetaKagglePreprocessor:
     (maybe because the related data are not publicly available on the Kaggle platform).
     To overcome this issue and enforce a sound relational structure in the KGTorrent database, before importing
     Meta Kaggle tables we preprocess them by using a recursive procedure that removes rows with unresolvable references.
+
     """
 
     def __init__(self, constraints_file_path, meta_kaggle_path, sqlalchemy_engine):
@@ -130,8 +131,6 @@ class MetaKagglePreprocessor:
 
         Args:
             table_name: the name of the ``.csv`` table to be loaded from the Meta Kaggle dataset.
-            is_ready_for_db:
-            TODO: write documentation for the is_ready_for_db argument.
 
         """
 
@@ -195,8 +194,6 @@ class MetaKagglePreprocessor:
 
         Args:
             table_name: the name of the table to be written to the database.
-            df:
-            TODO: write documentation for the df argument.
 
         """
 
@@ -310,6 +307,7 @@ def populate_db(mk):
 
     Args:
         mk: an instance of :class:`.MetaKagglePreprocessor`
+
     """
 
     print("***************************")
