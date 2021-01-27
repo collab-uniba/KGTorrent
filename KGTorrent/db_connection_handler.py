@@ -1,6 +1,6 @@
 from sqlalchemy import create_engine
 
-import KaggleTorrent.config as config
+import KGTorrent.config as config
 
 
 class DbConnectionHandler:
@@ -13,7 +13,7 @@ class DbConnectionHandler:
         self.mysql_password = config.db_password
 
     def create_sqlalchemy_engine(self):
-        """Creates an SQLAlchemy engine for the MySQL KaggleTorrent database"""
+        """Creates an SQLAlchemy engine for the MySQL KGTorrent database"""
 
         engine = create_engine('mysql+pymysql://{}:{}@{}:{}/{}?charset=utf8mb4'.format(
             self.mysql_username,

@@ -1,7 +1,7 @@
 """
 This module builds the db schema.
 
-N.B.: Before executing this script, you must create the KaggleTorrent database
+N.B.: Before executing this script, you must create the KGTorrent database
 by running the following command in your MySQL client::
 
     CREATE DATABASE IF NOT EXISTS kaggle_torrent CHARACTER SET utf8mb4;
@@ -12,7 +12,7 @@ from sqlalchemy import (MetaData, Table, Column, Integer, String, Float,
                         DateTime, Boolean, Text, BigInteger)
 from sqlalchemy.dialects.mysql import (MEDIUMTEXT, LONGTEXT)
 
-from KaggleTorrent.db_connection_handler import DbConnectionHandler
+from KGTorrent.db_connection_handler import DbConnectionHandler
 
 
 class DbSchema:
@@ -20,16 +20,16 @@ class DbSchema:
     def __init__(self, sqlalchemy_engine):
         """
             By constructing an object of type DbSchema,
-            this constructor builds the schema of the KaggleTorrent database.
+            this constructor builds the schema of the KGTorrent database.
 
-            N.B.: To be able to call this constructor, the KaggleTorrent database
+            N.B.: To be able to call this constructor, the KGTorrent database
             must already exist in your DBMS.
             If it does not exist yet, run the following command in your MySQL client::
 
                 CREATE DATABASE IF NOT EXISTS kaggle_torrent CHARACTER SET utf8mb4;
 
             Args:
-                sqlalchemy_engine (Engine): the SQLAlchemy engine used to connect to the KaggleTorrent database
+                sqlalchemy_engine (Engine): the SQLAlchemy engine used to connect to the KGTorrent database
 
             """
 
