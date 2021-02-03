@@ -14,9 +14,9 @@ from KGTorrent.db_connection_handler import DbConnectionHandler
 
 
 # PRIVATE UTILITY FUNCTIONS
-
+"""
 def check_table_emptiness(table_name, engine):
-    """
+    
     This utility function checks whether the database table named ``table_name`` is empty.
 
     Args:
@@ -26,7 +26,7 @@ def check_table_emptiness(table_name, engine):
     Returns:
         bool: True if the database table is empty, False otherwise.
 
-    """
+    
     with engine.connect() as connection:
         rp = connection.execute('SELECT * FROM {} LIMIT 1'.format(table_name))
         result = rp.first()
@@ -35,7 +35,7 @@ def check_table_emptiness(table_name, engine):
             return False
         else:
             return True
-
+    """
 
 def set_foreign_keys(sqlalchemy_engine, constraints_file_path):
     """
@@ -120,7 +120,7 @@ class MetaKagglePreprocessor:
         # Dataframe containing info on row loss after referential integrity checks on referencing tables
         self.stats = pd.DataFrame(columns=['Table', 'Initial#rows', 'Final#rows', 'Written'])
 
-    def load_table(self, table_name, is_ready_for_db=False):
+    def load_table(self, table_name):
         """
         This method loads Meta Kaggle ``.csv`` files and performs basic preprocessing steps
         (e.g., it calls the ``parse_dates`` method to covert string dates in a suitable date format).
@@ -133,16 +133,6 @@ class MetaKagglePreprocessor:
             table_name: the name of the ``.csv`` table to be loaded from the Meta Kaggle dataset.
 
         """
-
-        if is_ready_for_db:
-            df = pd.read_csv(os.path.join(self.meta_kaggle_path, table_name))
-
-            if 'ForumMessageVotes' in table_name:
-                print('\t\t Fix indexing...')
-                df.drop_duplicates(subset=['Id'], inplace=True)
-
-            df = parse_dates(df)
-            self.write_table(table_name, df)
 
         print('\t- Searching the table...')
         if table_name not in self.dataframes:
@@ -188,7 +178,7 @@ class MetaKagglePreprocessor:
         else:
             print('\t- Table already loaded.')
 
-    def write_table(self, table_name, df=None):
+    def write_table(self, table_name):
         """
         This method writes preprocessed tables to the database by leveraging the ``pandas.DataFrame.to_sql`` method.
 
@@ -197,8 +187,7 @@ class MetaKagglePreprocessor:
 
         """
 
-        if df is None:
-            df = self.dataframes[table_name]
+        df = self.dataframes[table_name]
 
         print('Writing "{}" to database...'.format(table_name))
         df.to_sql(table_name[:-4].lower(),
