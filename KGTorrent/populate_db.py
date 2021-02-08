@@ -14,28 +14,6 @@ from KGTorrent.db_connection_handler import DbConnectionHandler
 
 
 # PRIVATE UTILITY FUNCTIONS
-"""
-def check_table_emptiness(table_name, engine):
-    
-    This utility function checks whether the database table named ``table_name`` is empty.
-
-    Args:
-        table_name (str): the name of the table to be checked, which corresponds to the name of the ``.csv`` file from which its data is derived (omitting the extension).
-        engine (Engine): the SQLAlchemy engine used to connect to the KGTorrent database.
-
-    Returns:
-        bool: True if the database table is empty, False otherwise.
-
-    
-    with engine.connect() as connection:
-        rp = connection.execute('SELECT * FROM {} LIMIT 1'.format(table_name))
-        result = rp.first()
-
-        if result is not None:
-            return False
-        else:
-            return True
-    """
 
 def set_foreign_keys(sqlalchemy_engine, constraints_file_path):
     """
