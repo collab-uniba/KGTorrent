@@ -119,6 +119,11 @@ def main():
         print("** QUERYING KERNELS TO DOWNLOAD **")
         nb_identifiers = db_engine.get_nb_identifiers(config.nb_conf['languages'])
 
+        # Free memory
+        del dl
+        del mk
+        del db_engine
+
         # Download the notebooks and update the db with their local path
         # To get a specific subset of notebooks, query the database by using
         # the db_schema object as needed.
