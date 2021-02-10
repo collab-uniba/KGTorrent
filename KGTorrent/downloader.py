@@ -54,7 +54,7 @@ class Downloader:
         self.n_successful_downloads = 0
         self.n_failed_downloads = 0
 
-    def __check_destination_folder(self):
+    def _check_destination_folder(self):
         """
         This method verifies the bond between notebooks in the download folder and the identifiers
         in the notebook slugs and identifiers ``pandas.DataFrame``.
@@ -89,7 +89,7 @@ class Downloader:
                 print('Removing notebook', name, ' not valid')
                 path.unlink()
 
-    def __http_download(self):
+    def _http_download(self):
         """
         This method implements the HTTP download strategy.
         """
@@ -127,7 +127,7 @@ class Downloader:
             # Wait a bit to avoid a potential IP banning
             time.sleep(1)
 
-    def __api_download(self):
+    def _api_download(self):
         """
         This method implements the API download strategy.
         """
@@ -170,7 +170,7 @@ class Downloader:
             strategy:  The download strategy (``HTTP`` or ``API``). By default it is ``HTTP``.
         """
 
-        self.__check_destination_folder()
+        self._check_destination_folder()
 
         # Number of notebooks to download
         total_rows = self.nb_identifiers.shape[0]
@@ -181,11 +181,11 @@ class Downloader:
 
         # HTTP STRATEGY
         if strategy is 'HTTP':
-            self.__http_download()
+            self._http_download()
 
         # API STRATEGY
         if strategy is 'API':
-            self.__api_download()
+            self._api_download()
 
         # Print download session summary
         # Print summary to stdout

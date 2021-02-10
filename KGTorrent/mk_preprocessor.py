@@ -52,7 +52,7 @@ class MkPreprocessor:
         # Dataframe containing info on row loss after referential integrity checks on referencing tables
         self.stats = pd.DataFrame(columns=['Table', 'Initial#rows', 'Final#rows', 'Ratio'])
 
-    def __basic_preprocessing(self):
+    def _basic_preprocessing(self):
         """
         This method performs basic preprocessing steps converting dates from string format into a more suitable format.
         In the MetaKglle dataset date columns are easily recognizable through their names as they end with 'Date' suffix.
@@ -105,7 +105,7 @@ class MkPreprocessor:
 
         print()
 
-    def __process_referencing_table(self, referencing):
+    def _process_referencing_table(self, referencing):
         """
         This method is invoked recursively to drop rows with unsolvable foreign key constraints.
         It uses :func:`.MKPreprocessor.clean_referencing_table` to do the actual cleaning.
@@ -129,10 +129,10 @@ class MkPreprocessor:
             for referenced in referenced_list:
                 print(self.already_visited)
                 if referenced not in self.already_visited:
-                    self.__process_referencing_table(referenced)
-                self.__clean_referencing_table(referencing, referenced)
+                    self._process_referencing_table(referenced)
+                self._clean_referencing_table(referencing, referenced)
 
-    def __clean_referencing_table(self, referencing, referenced):
+    def _clean_referencing_table(self, referencing, referenced):
         """
         Given two tables, a referencing table and a referenced table, this method cleans the referencing table
         by removing all those rows pointing at a tuple that cannot be found in the referenced table.
@@ -199,7 +199,7 @@ class MkPreprocessor:
         """
 
         print('### Executing basic preprocessing...')
-        self.__basic_preprocessing()
+        self._basic_preprocessing()
 
         print('### Executing referential integrity preprocessing...')
 
@@ -214,7 +214,7 @@ class MkPreprocessor:
                 print("- New cycle -")
                 print("-------------")
 
-                self.__process_referencing_table(value)
+                self._process_referencing_table(value)
                 self.already_visited = []
 
         # Final update of the stats table
