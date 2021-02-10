@@ -1,4 +1,7 @@
-"""This module defines the class that handles the connection to the database via SQLAlchemy."""
+"""
+This module defines the class that handles the communication to the database via SQLAlchemy.
+"""
+
 import sys
 from sqlalchemy.exc import IntegrityError
 
@@ -24,8 +27,23 @@ from KGTorrent.data_loader import DataLoader
 
 
 class DbCommunicationHandler:
+    """
+    This class creates an SQLAlchemy engine and has methods for creating, populating and querying
+    a database with MetaKaggle data.
+    """
 
     def __init__(self, db_username, db_password, db_host, db_port, db_name):
+        """
+        The constructor of this class creates the SQLAlchemy engine with provided arguments.
+
+        Args:
+            db_username: A valid username of the hosting MYSQL database
+            db_password: The password related to the username
+            db_host: An IP address of a MYSQL database
+            db_port: The port of the MYSQL process on the host machine
+            db_name: The name of the database to interact with
+        """
+
         self.engine = create_engine('mysql+pymysql://{}:{}@{}:{}/{}?charset=utf8mb4'.format(
             db_username,
             db_password,
@@ -36,8 +54,19 @@ class DbCommunicationHandler:
             pool_recycle=3600)
 
     def create_new_db(self, drop_if_exists=False):
+        """
+        This method creates a database with the provided name and builds schemas of MetaKaggle tables.
+        It throws by default an exception when the database already exists in order to avoid an initialization
+        called by mistake.
+
+        Args:
+            drop_if_exists: If True the database is dropped before creation. By default it is False.
+        """
 
         def build_db_schema():
+            """
+            This function builds the schema of the KGTorrent MySQL database.
+            """
             # Create the metadata object
             metadata = MetaData()
 
@@ -377,7 +406,7 @@ class DbCommunicationHandler:
 
             # Create all tables added to the metadata object
             metadata.create_all(self.engine)
-            #END build_db_schema
+            # END build_db_schema
 
         if database_exists(self.engine.url):
             if drop_if_exists:
@@ -388,9 +417,21 @@ class DbCommunicationHandler:
         build_db_schema()
 
     def db_exists(self):
+        """
+        This method checks whether the database exists.
+
+        Returns:
+            bool: True if the database exists, False otherwise.
+        """
         return database_exists(self.engine.url)
 
     def write_tables(self, tables_dict):
+        """
+        This method writes tables to the database by using the ``pandas.DataFrame.to_sql`` method.
+
+        Args:
+            tables_dict: The dictionary whose keys are the table names and whose values​are the ``pandas.DataFrame`` tables.
+        """
 
         for table_name in tables_dict.keys():
 
@@ -409,12 +450,10 @@ class DbCommunicationHandler:
 
     def set_foreign_keys(self, constraints_df):
         """
-        After the database population, this function sets the foreign key constraints.
+        This method sets the foreign key constraints based on information provided by the relative ``pandas.DataFrame``.
 
         Args:
-            sqlalchemy_engine: the SQLAlchemy engine used to connect to the KGTorrent database.
-            constraints_file_path: the path to the ``.csv`` file containing information on the foreign key constraints to be set. By default, it is located at ``/data/fk_constraints_data.csv``.
-
+            constraints_df: The ``pandas.DataFrame`` which contains the foreign key constrains information
         """
 
         for _, fk in constraints_df.iterrows():
@@ -432,7 +471,18 @@ class DbCommunicationHandler:
             except IntegrityError as e:
                 print("\t - INTEGRITY ERROR. Can't update table ", table_name, file=sys.stderr)
 
-    def get_kernels_identifiers(self, languages):
+    def get_nb_identifiers(self, languages):
+        """
+        This method queries the database in order to retrieve slugs and identifiers of notebooks
+        belonging to the provided languages.
+
+        Args:
+            languages: A string array of notebook languages present in Kaggle.
+
+        Returns:
+            nb_identifiers: The ``pandas.DataFrame`` containing notebook slugs and identifiers.
+        """
+
         # Prepare the query
         query = 'SELECT ' \
                 'users.UserName, ' \
@@ -457,9 +507,9 @@ class DbCommunicationHandler:
         query = query + ';'
 
         # Execute the query
-        kernels_identifiers = pd.read_sql(sql=query, con=self.engine)
+        nb_identifiers = pd.read_sql(sql=query, con=self.engine)
 
-        return kernels_identifiers
+        return nb_identifiers
 
 
 if __name__ == '__main__':
@@ -505,5 +555,5 @@ if __name__ == '__main__':
         db_engine.set_foreign_keys(dl.get_constraints_df())
 
         print("** QUERING KERNELS TO DOWNLOAD **")
-        kernels_ids = db_engine.get_kernels_identifiers(config.download_conf['languages'])
+        kernels_ids = db_engine.get_nb_identifiers(config.nb_conf['languages'])
         print(kernels_ids.head())

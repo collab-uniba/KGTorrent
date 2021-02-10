@@ -1,3 +1,8 @@
+"""
+This module defines the class that handles the whole preprocessing of the MetaKaggle tables in order to ensure their
+entity integrity, referential integrity and domain integrity.
+"""
+
 import pandas as pd
 import numpy as np
 
@@ -6,8 +11,28 @@ from KGTorrent import config
 from KGTorrent.data_loader import DataLoader
 
 class MkPreprocessor:
+    """
+    This class handles the preprocessing of data from the Meta Kaggle dataset.
+
+    Foreign key constraints in Meta Kaggle cannot always be resolved as there are many missing rows in the dataset
+    (maybe because the related data are not publicly available on the Kaggle platform).
+    To overcome this issue and enforce a sound relational structure in the KGTorrent database we preprocess them
+    by using a recursive procedure. This removes rows with unresolvable references before importing Meta Kaggle tables.
+    """
 
     def __init__(self, tables_dict, constraints_df):
+        """
+        Providing a dictionary of tables that need to be preprocessed and
+        the foreign key constraints information for the purpose, the constructor of this class:
+         - adds a boolean field ``IsSolved`` to the constraints dataframe in order both to keep track of changes in
+           referenced tables and to skip solved constraints in the process.
+         - initializes the list of the visited table used to avoid cycles while preprocessing.
+         - initializes the summary stats ``pandas.DataFrame``
+
+        Args:
+            tables_dict: The dictionary whose keys are the table names and whose values​are the ``pandas.DataFrame`` tables
+            constraints_df: The ``pandas.DataFrame`` which contains the foreign key constrains information
+        """
         # Keep track tables that have been already visited during the current recursive call
         self.already_visited = []
 
@@ -17,13 +42,22 @@ class MkPreprocessor:
         self.tables_dict = tables_dict
 
         # Dataframe containing constraints info:
-        # (Referencing Table, Foreign Key, Referenced Table, Referenced Column, IsSolved)
+        # (Referencing Table, Foreign Key, Referenced Table, Referenced Column)
         self.constraints_df = constraints_df
 
-        # Dataframe containing info on row loss after referential integrity checks on referencing tables
-        self.stats = pd.DataFrame(columns=['Table', 'Initial#rows', 'Final#rows'])
+        # Add and set up to false the (IsSolved) column
+        # that informs if a constraint has been resolved
+        self.constraints_df['IsSolved'] = False
 
-    def basic_preprocessing(self):
+        # Dataframe containing info on row loss after referential integrity checks on referencing tables
+        self.stats = pd.DataFrame(columns=['Table', 'Initial#rows', 'Final#rows', 'Ratio'])
+
+    def __basic_preprocessing(self):
+        """
+        This method performs basic preprocessing steps converting dates from string format into a more suitable format.
+        In the MetaKglle dataset date columns are easily recognizable through their names as they end with 'Date' suffix.
+        The method also performs specific adjustments required by two Meta Kaggle tables named ``ForumMessageVotes`` and ``Submissions``.
+        """
 
         for table_name in self.tables_dict.keys():
             # SPECIFIC TABLES FIX
@@ -71,16 +105,15 @@ class MkPreprocessor:
 
         print()
 
-    def process_referencing_table(self, referencing):
+    def __process_referencing_table(self, referencing):
         """
-        This method is invoked recursively to drop rows with unresolvable foreign key constraints.
-        It uses :func:`.MetaKagglePreprocessor.clean_referencing_table` to do the actual cleaning.
+        This method is invoked recursively to drop rows with unsolvable foreign key constraints.
+        It uses :func:`.MKPreprocessor.clean_referencing_table` to do the actual cleaning.
         Its purpose is to traverse the table relationships graph to take full relationship chains into account.
         It stops when it detects cycles.
 
         Args:
             referencing: the table with foreign keys to be analyzed.
-
         """
 
         print("### PREPROCESSING", referencing)
@@ -96,18 +129,20 @@ class MkPreprocessor:
             for referenced in referenced_list:
                 print(self.already_visited)
                 if referenced not in self.already_visited:
-                    self.process_referencing_table(referenced)
-                self.clean_referencing_table(referencing, referenced)
+                    self.__process_referencing_table(referenced)
+                self.__clean_referencing_table(referencing, referenced)
 
-    def clean_referencing_table(self, referencing, referenced):
+    def __clean_referencing_table(self, referencing, referenced):
         """
-        Given two tables, a referencing table and a referenced table, it cleans the former by removing all rows pointing
-        to tuples from the second that cannot be found.
+        Given two tables, a referencing table and a referenced table, this method cleans the referencing table
+        by removing all those rows pointing at a tuple that cannot be found in the referenced table.
+        It also marks the relative foreign key constraint as solved and, whereas the rows are removed from
+        the referencing table, constraints are marked as unsolved where the table referencing is shown as
+        the referenced table in the constraints table
 
         Args:
             referencing: the table to be cleaned.
-            referenced: the table whose rows are referenced by the table to be cleaned.
-
+            referenced: the table that contains rows referenced by the table that has to be cleaned.
         """
 
         # From the constraints_df, I select info on the foreign keys of the referencing table
@@ -153,15 +188,18 @@ class MkPreprocessor:
 
     def preprocess_mk(self):
         """
-        This function handles the whole database population process.
-        First, it runs the recursive preprocessing method of :class:`.MetaKagglePreprocessor` until foreign key constraints are
-        solved for all tables. Then, it writes the preprocessed tables to the database. Finally, it prints summary stats
-        about the filtering process to stdout.
+        This method executes the basic preprocessing method :func:`.MKPreprocessor.__basic_preprocessing` and it runs
+        the recursive preprocessing method :func:`.MKPreprocessor.__process_referencing_table` until foreign key
+        constraints are solved for all tables.
+        It also builds summary stats about the filtering process.
 
+        Returns:
+            - tables_dict - dictionary of preprocessed tables
+            - stats       - summary stats related to the filtering process
         """
 
         print('### Executing basic preprocessing...')
-        self.basic_preprocessing()
+        self.__basic_preprocessing()
 
         print('### Executing referential integrity preprocessing...')
 
@@ -176,7 +214,7 @@ class MkPreprocessor:
                 print("- New cycle -")
                 print("-------------")
 
-                self.process_referencing_table(value)
+                self.__process_referencing_table(value)
                 self.already_visited = []
 
         # Final update of the stats table

@@ -12,7 +12,7 @@ from KGTorrent.mk_preprocessor import MkPreprocessor
 
 
 def main():
-    """This is the entrypoint for this CLI application.
+    """This is the entry point for this CLI application.
     Here we will handle possible arguments and orchestrate function/method calls
     to build and populate the KGTorrent database"""
 
@@ -39,16 +39,6 @@ def main():
                                 "Use the `HTTP` strategy to download full kernels via HTTP requests."
                                 "N.B.: Notebooks downloaded via the Kaggle API miss code cell outputs.")
 
-    # my_parser.add_argument('--DBstring',
-    #                        type=str,
-    #                        help="Details about the database connection must be provided as environment variables;"
-    #                             "Alternatively, you can specify them using this command line argument."
-    #                             "The expected format is: '<usr>:<pwd>@<host>:<port>/<db_name>'")
-
-    # my_parser.add_argument('--dataset_path',
-    #                        type=str,
-    #                        help="Path of the directory in which the dataset is stored.")
-
     # Execute the parse_args() method
     args = my_parser.parse_args()
 
@@ -65,7 +55,8 @@ def main():
                                        config.db_host,
                                        config.db_port,
                                        config.db_name)
-    print("Connection established.")
+
+    print("## Connection with database established.")
 
     # CHECK USER VARIABLES
     proceed = None
@@ -89,8 +80,8 @@ def main():
         proceed = True
 
     # Check download folder emptiness when init
-    has_data = next(Path(config.nb_archive_path).iterdir(), None)
-    if (has_data is not None) & (command == 'init'):
+    data = next(Path(config.nb_archive_path).iterdir(), None)
+    if (data is not None) & (command == 'init'):
         print(f'Download folder {config.nb_archive_path} is not empty.', file=sys.stderr)
         print('Please, provide the path to an empty folder to store downloaded notebooks.', file=sys.stderr)
         proceed = False
@@ -103,9 +94,9 @@ def main():
         print("********************")
         dl = DataLoader(config.constraints_file_path, config.meta_kaggle_path)
 
-        print("**********************************")
-        print("** TABLES PREPROCESSING STARTED **")
-        print("**********************************")
+        print("***********************************")
+        print("** TABLES PRE-PROCESSING STARTED **")
+        print("***********************************")
         mk = MkPreprocessor(dl.get_tables_dict(), dl.get_constraints_df())
         processed_dict, stats = mk.preprocess_mk()
 
@@ -114,7 +105,7 @@ def main():
         print("*************\n")
         print(stats)
 
-        print("Initializing DB...")
+        print("## Initializing DB...")
         db_engine.create_new_db(drop_if_exists=True)
 
         print("***************************")
@@ -125,8 +116,8 @@ def main():
         print("** APPLICATION OF CONSTRAINTS **")
         db_engine.set_foreign_keys(dl.get_constraints_df())
 
-        print("** QUERING KERNELS TO DOWNLOAD **")
-        kernels_ids = db_engine.get_kernels_identifiers(config.download_conf['languages'])
+        print("** QUERYING KERNELS TO DOWNLOAD **")
+        nb_identifiers = db_engine.get_nb_identifiers(config.nb_conf['languages'])
 
         # Download the notebooks and update the db with their local path
         # To get a specific subset of notebooks, query the database by using
@@ -134,9 +125,9 @@ def main():
         print("*******************************")
         print("** NOTEBOOK DOWNLOAD STARTED **")
         print("*******************************")
-        downloader = Downloader(kernels_ids.head(), config.nb_archive_path)
+        downloader = Downloader(nb_identifiers, config.nb_archive_path)
         print(f'# Selected strategy. {args.strategy}')
-        downloader.download_kernels(strategy=args.strategy)
+        downloader.download_notebooks(strategy=args.strategy)
         print('## Download finished.')
 
     time.sleep(0.2)

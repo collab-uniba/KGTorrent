@@ -17,19 +17,18 @@ db_name = os.environ['DB_NAME']
 db_username = os.environ['MYSQL_USER']
 db_password = os.environ['MYSQL_PWD']
 
-# Paths
+# Data paths
 meta_kaggle_path = os.environ['METAKAGGLE_PATH']
 constraints_file_path = '../data/fk_constraints_data.csv'
-nb_archive_path = os.environ['NB_DEST_PATH']
-log_path = os.environ['LOG_DEST_PATH']
 
-# Download configuration
-download_conf = {
-    'min_nb_lines': 20,
+# Notebook dataset configuration
+nb_archive_path = os.environ['NB_DEST_PATH']
+nb_conf = {
     'languages': ['IPython Notebook HTML']
 }
 
-# Logginge Configuration
+# Logging Configuration
+log_path = os.environ['LOG_DEST_PATH']
 logging.basicConfig(
     filename=os.path.join(log_path, f'{time.time()}.log'),
     filemode='w',

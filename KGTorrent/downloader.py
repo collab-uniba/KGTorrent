@@ -1,5 +1,5 @@
 """
-This module handles the actual download of Jupyter notebooks from Kaggle.
+This module defines the class that handles the actual download of Jupyter notebooks from Kaggle.
 """
 
 import logging
@@ -18,40 +18,51 @@ from KGTorrent.db_communication_handler import DbCommunicationHandler
 class Downloader:
     """
     The ``Downloader`` class handles the download of Jupyter notebooks from Kaggle.
-    First, it queries the database to get notebook slugs and identifiers and then it requests
-    notebooks from Kaggle using one of the following two strategies:
+    It needs the notebook slugs and identifiers ``pandas.DataFrame`` in order to request
+    notebooks from Kaggle.
+    To do so it uses one of the following two strategies:
 
     ``HTTP``
         to download full notebooks via HTTP requests;
 
     ``API``
         to download notebooks via calls to the official Kaggle API;
-        generally, Jupyter notebooks downloaded with this strategy miss the output of code cells.
+        Jupyter notebooks downloaded by using this strategy always miss the output of code cells.
 
     Notebooks that are already present in the download folder are skipped.
-    During the ``refresh`` procedure, notebooks that are already present in the download folder
-    but that are no longer referenced in the KGTorrent database are deleted.
-
-    Args:
-        sqlalchemy_engine: the SQLAlchemy engine used to connect to the KGTorrent database.
-        download_config: the download configuration, set up in :py:mod:`KGTorrent.config`.
-        strategy: the download strategy (``HTTP`` or ``API``).
+    During the ``refresh`` procedure all those notebooks that are already present in the download folder
+    but are no longer referenced in the KGTorrent database are deleted.
     """
 
-    def __init__(self, kernels_identifiers, nb_archive_path):
+    def __init__(self, nb_identifiers, nb_archive_path):
+        """
+        The constructor of this class sets notebook identifiers and download folder provided by the arguments.
+        It also initializes the counters for successes and failures.
+
+        Args:
+            nb_identifiers: The ``pandas.DataFrame`` containing notebook slugs and identifiers.
+            nb_archive_path: The path to the download folder.
+        """
 
         # Notebook slugs and identifiers [UserName, CurrentUrlSlug, CurrentKernelVersionId]
-        self.kernels_identifiers = kernels_identifiers
+        self.nb_identifiers = nb_identifiers
 
-        # Detination Folder
+        # Destination Folder
         self.nb_archive_path = nb_archive_path
 
         # Counters for successes and failures
         self.n_successful_downloads = 0
         self.n_failed_downloads = 0
 
-    def check_destination_folder(self):
-        # CHECK EXISTING NOTEBOOKS IN FOLDER
+    def __check_destination_folder(self):
+        """
+        This method verifies the bond between notebooks in the download folder and the identifiers
+        in the notebook slugs and identifiers ``pandas.DataFrame``.
+        It checks whether an identifier of the notebooks, which are present in the destination folder,
+        is present in the notebook slugs and identifiers ``pandas.DataFrame``.
+        If present it deletes the notebook identifiers from the notebook slugs and identifiers ``pandas.DataFrame``.
+        If not present it deletes the bondless notebook in the download folder.
+        """
 
         # Get notebook names
         notebook_paths = list(Path(self.nb_archive_path).glob('*.ipynb'))
@@ -64,12 +75,12 @@ class Downloader:
             if len(split) == 2:
 
                 # If the file exists in folder drop it from res
-                if (split[0] in self.kernels_identifiers['UserName'].values) & \
-                        (split[1] in self.kernels_identifiers['CurrentUrlSlug'].values):
+                if (split[0] in self.nb_identifiers['UserName'].values) & \
+                        (split[1] in self.nb_identifiers['CurrentUrlSlug'].values):
                     print('Notebook ', name, ' already downloaded')
-                    self.kernels_identifiers = self.kernels_identifiers.loc[~(
-                            (self.kernels_identifiers['UserName'] == split[0]) &
-                            (self.kernels_identifiers['CurrentUrlSlug'] == split[1]))]
+                    self.nb_identifiers = self.nb_identifiers.loc[~(
+                            (self.nb_identifiers['UserName'] == split[0]) &
+                            (self.nb_identifiers['CurrentUrlSlug'] == split[1]))]
                 else:  # remove the notebook
                     print('Removing notebook', name, ' not found in db')
                     path.unlink()
@@ -78,25 +89,29 @@ class Downloader:
                 print('Removing notebook', name, ' not valid')
                 path.unlink()
 
-    def http_download(self):
-
+    def __http_download(self):
+        """
+        This method implements the HTTP download strategy.
+        """
         self.n_successful_downloads = 0
         self.n_failed_downloads = 0
 
-        for row in tqdm(self.kernels_identifiers.itertuples(), total=self.kernels_identifiers.shape[0]):
+        for row in tqdm(self.nb_identifiers.itertuples(), total=self.nb_identifiers.shape[0]):
 
             # Generate URL
             url = 'https://www.kaggle.com/kernels/scriptcontent/{}/download'.format(row[3])
+
             # Download notebook content to memory
+            # noinspection PyBroadException
             try:
                 notebook = requests.get(url, allow_redirects=True, timeout=5)
 
-            except requests.exceptions.HTTPError as http_err:
+            except requests.exceptions.HTTPError:
                 logging.exception(f'HTTPError while requesting the notebook at: "{url}"')
                 self.n_failed_downloads += 1
                 continue
 
-            except Exception as err:
+            except Exception:
                 logging.exception(f'An error occurred while requesting the notebook at: "{url}"')
                 self.n_failed_downloads += 1
                 continue
@@ -112,8 +127,12 @@ class Downloader:
             # Wait a bit to avoid a potential IP banning
             time.sleep(1)
 
-    def api_download(self):
-        # Inizialization and authentication
+    def __api_download(self):
+        """
+        This method implements the API download strategy.
+        """
+
+        # Initialization and authentication
         # It's need kaggle.json token in ~/.kaggle
         api = KaggleApi()
         api.authenticate()
@@ -121,8 +140,9 @@ class Downloader:
         self.n_successful_downloads = 0
         self.n_failed_downloads = 0
 
-        for row in tqdm(self.kernels_identifiers.itertuples(), total=self.kernels_identifiers.shape[0]):
+        for row in tqdm(self.nb_identifiers.itertuples(), total=self.nb_identifiers.shape[0]):
 
+            # noinspection PyBroadException
             try:
                 api.kernels_pull(f'{row[1]}/{row[2]}', path=Path(self.nb_archive_path))
 
@@ -131,7 +151,7 @@ class Downloader:
                 nb = Path(self.nb_archive_path + f'/{row[2]}.ipynb')
                 nb.rename(self.nb_archive_path + f'/{row[1]}_{row[2]}.ipynb')
 
-            except Exception as err:
+            except Exception:
                 logging.exception(f'An error occurred while requesting the notebook {row[1]}/{row[2]}')
                 self.n_failed_downloads += 1
                 continue
@@ -142,13 +162,18 @@ class Downloader:
             # Wait a bit to avoid a potential IP banning
             time.sleep(1)
 
-    def download_kernels(self, strategy='HTTP'):
-        # DOWNLOAD PROCEDURE
+    def download_notebooks(self, strategy='HTTP'):
+        """
+        This method executes the download procedure using the provided strategy after checking the destination folder.
 
-        self.check_destination_folder()
+        Args:
+            strategy:  The download strategy (``HTTP`` or ``API``). By default it is ``HTTP``.
+        """
+
+        self.__check_destination_folder()
 
         # Number of notebooks to download
-        total_rows = self.kernels_identifiers.shape[0]
+        total_rows = self.nb_identifiers.shape[0]
         print("Total number of notebooks to download:", total_rows)
 
         # Wait a bit to ensure the print before tqdm bar
@@ -156,11 +181,11 @@ class Downloader:
 
         # HTTP STRATEGY
         if strategy is 'HTTP':
-            self.http_download()
+            self.__http_download()
 
         # API STRATEGY
         if strategy is 'API':
-            self.api_download()
+            self.__api_download()
 
         # Print download session summary
         # Print summary to stdout
@@ -185,7 +210,7 @@ if __name__ == '__main__':
                                        config.db_name)
 
     print("** QUERING KERNELS TO DOWNLOAD **")
-    kernels_ids = db_engine.get_kernels_identifiers(config.download_conf['languages'])
+    kernels_ids = db_engine.get_nb_identifiers(config.nb_conf['languages'])
 
     downloader = Downloader(kernels_ids.head(), config.nb_archive_path)
     strategies = 'HTTP', 'API'
@@ -194,8 +219,5 @@ if __name__ == '__main__':
     print("** NOTEBOOK DOWNLOAD STARTED **")
     print("*******************************")
     print(f'# Selected strategy. {strategies[0]}')
-    downloader.download_kernels(strategy=strategies[0])
-    print('## Download finished.')
-    print(f'# Selected strategy. {strategies[1]}')
-    downloader.download_kernels(strategy=strategies[1])
+    downloader.download_notebooks(strategy=strategies[0])
     print('## Download finished.')
