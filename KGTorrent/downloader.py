@@ -45,14 +45,14 @@ class Downloader:
         """
 
         # Notebook slugs and identifiers [UserName, CurrentUrlSlug, CurrentKernelVersionId]
-        self.nb_identifiers = nb_identifiers
+        self._nb_identifiers = nb_identifiers
 
         # Destination Folder
-        self.nb_archive_path = nb_archive_path
+        self._nb_archive_path = nb_archive_path
 
         # Counters for successes and failures
-        self.n_successful_downloads = 0
-        self.n_failed_downloads = 0
+        self._n_successful_downloads = 0
+        self._n_failed_downloads = 0
 
     def _check_destination_folder(self):
         """
@@ -65,7 +65,7 @@ class Downloader:
         """
 
         # Get notebook names
-        notebook_paths = list(Path(self.nb_archive_path).glob('*.ipynb'))
+        notebook_paths = list(Path(self._nb_archive_path).glob('*.ipynb'))
 
         for path in notebook_paths:
             name = path.stem
@@ -75,12 +75,12 @@ class Downloader:
             if len(split) == 2:
 
                 # If the file exists in folder drop it from res
-                if (split[0] in self.nb_identifiers['UserName'].values) & \
-                        (split[1] in self.nb_identifiers['CurrentUrlSlug'].values):
+                if (split[0] in self._nb_identifiers['UserName'].values) & \
+                        (split[1] in self._nb_identifiers['CurrentUrlSlug'].values):
                     print('Notebook ', name, ' already downloaded')
-                    self.nb_identifiers = self.nb_identifiers.loc[~(
-                            (self.nb_identifiers['UserName'] == split[0]) &
-                            (self.nb_identifiers['CurrentUrlSlug'] == split[1]))]
+                    self._nb_identifiers = self._nb_identifiers.loc[~(
+                            (self._nb_identifiers['UserName'] == split[0]) &
+                            (self._nb_identifiers['CurrentUrlSlug'] == split[1]))]
                 else:  # remove the notebook
                     print('Removing notebook', name, ' not found in db')
                     path.unlink()
@@ -93,10 +93,10 @@ class Downloader:
         """
         This method implements the HTTP download strategy.
         """
-        self.n_successful_downloads = 0
-        self.n_failed_downloads = 0
+        self._n_successful_downloads = 0
+        self._n_failed_downloads = 0
 
-        for row in tqdm(self.nb_identifiers.itertuples(), total=self.nb_identifiers.shape[0]):
+        for row in tqdm(self._nb_identifiers.itertuples(), total=self._nb_identifiers.shape[0]):
 
             # Generate URL
             url = 'https://www.kaggle.com/kernels/scriptcontent/{}/download'.format(row[3])
@@ -108,20 +108,20 @@ class Downloader:
 
             except requests.exceptions.HTTPError:
                 logging.exception(f'HTTPError while requesting the notebook at: "{url}"')
-                self.n_failed_downloads += 1
+                self._n_failed_downloads += 1
                 continue
 
             except Exception:
                 logging.exception(f'An error occurred while requesting the notebook at: "{url}"')
-                self.n_failed_downloads += 1
+                self._n_failed_downloads += 1
                 continue
 
             # Write notebook in folder
-            download_path = self.nb_archive_path + f'/{row[1]}_{row[2]}.ipynb'
+            download_path = self._nb_archive_path + f'/{row[1]}_{row[2]}.ipynb'
             with open(Path(download_path), 'wb') as notebook_file:
                 notebook_file.write(notebook.content)
 
-            self.n_successful_downloads += 1
+            self._n_successful_downloads += 1
             logging.info(f'Downloaded {row[1]}/{row[2]} (ID: {row[3]})')
 
             # Wait a bit to avoid a potential IP banning
@@ -137,26 +137,26 @@ class Downloader:
         api = KaggleApi()
         api.authenticate()
 
-        self.n_successful_downloads = 0
-        self.n_failed_downloads = 0
+        self._n_successful_downloads = 0
+        self._n_failed_downloads = 0
 
-        for row in tqdm(self.nb_identifiers.itertuples(), total=self.nb_identifiers.shape[0]):
+        for row in tqdm(self._nb_identifiers.itertuples(), total=self._nb_identifiers.shape[0]):
 
             # noinspection PyBroadException
             try:
-                api.kernels_pull(f'{row[1]}/{row[2]}', path=Path(self.nb_archive_path))
+                api.kernels_pull(f'{row[1]}/{row[2]}', path=Path(self._nb_archive_path))
 
                 # Kaggle API save notebook only with slug name
                 # Rename downloaded notebook to username/slug
-                nb = Path(self.nb_archive_path + f'/{row[2]}.ipynb')
-                nb.rename(self.nb_archive_path + f'/{row[1]}_{row[2]}.ipynb')
+                nb = Path(self._nb_archive_path + f'/{row[2]}.ipynb')
+                nb.rename(self._nb_archive_path + f'/{row[1]}_{row[2]}.ipynb')
 
             except Exception:
                 logging.exception(f'An error occurred while requesting the notebook {row[1]}/{row[2]}')
-                self.n_failed_downloads += 1
+                self._n_failed_downloads += 1
                 continue
 
-            self.n_successful_downloads += 1
+            self._n_successful_downloads += 1
             logging.info(f'Downloaded {row[1]}/{row[2]} (ID: {row[3]})')
 
             # Wait a bit to avoid a potential IP banning
@@ -173,7 +173,7 @@ class Downloader:
         self._check_destination_folder()
 
         # Number of notebooks to download
-        total_rows = self.nb_identifiers.shape[0]
+        total_rows = self._nb_identifiers.shape[0]
         print("Total number of notebooks to download:", total_rows)
 
         # Wait a bit to ensure the print before tqdm bar
@@ -190,14 +190,14 @@ class Downloader:
         # Print download session summary
         # Print summary to stdout
         print("Total number of notebooks to download was:", total_rows)
-        print("\tNumber of successful downloads:", self.n_successful_downloads)
-        print("\tNumber of failed downloads:", self.n_failed_downloads)
+        print("\tNumber of successful downloads:", self._n_successful_downloads)
+        print("\tNumber of failed downloads:", self._n_failed_downloads)
 
         # Print summary to log file
         logging.info('DOWNLOAD COMPLETED.\n'
                      f'Total attempts: {total_rows}:\n'
-                     f'\t- {self.n_successful_downloads} successful;\n'
-                     f'\t- {self.n_failed_downloads} failed.')
+                     f'\t- {self._n_successful_downloads} successful;\n'
+                     f'\t- {self._n_failed_downloads} failed.')
 
 
 if __name__ == '__main__':

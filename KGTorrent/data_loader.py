@@ -24,21 +24,21 @@ class DataLoader:
         # Dataframe containing constraints info:
         # (Referencing Table, Foreign Key, Referenced Table, Referenced Column, IsSolved)
         print('## Loading MetaKaggle constraints data...')
-        self.constraints_df = pd.read_csv(constraints_file_path)
+        self._constraints_df = pd.read_csv(constraints_file_path)
 
         # Array of table file names
-        table = self.constraints_df['Table']
-        referenced_table = self.constraints_df['Referenced Table']
+        table = self._constraints_df['Table']
+        referenced_table = self._constraints_df['Referenced Table']
         union = table.append(referenced_table, ignore_index=True)
         table_file_names = union.unique()
 
         # Dictionary of tables
-        self.tables_dict = {}
+        self._tables_dict = {}
 
         # Reading tables
         print('## Loading MeataKaggle csv tables from provided path...')
         for file_name in table_file_names:
-            self.tables_dict[file_name] = pd.read_csv(meta_kaggle_path + '\\' + file_name)
+            self._tables_dict[file_name] = pd.read_csv(meta_kaggle_path + '\\' + file_name)
             print(f'- {file_name} loaded.')
 
     def get_constraints_df(self):
@@ -49,7 +49,7 @@ class DataLoader:
         Returns:
             constraints_df: The ``pandas.DataFrame`` containing the foreign key constrains information.
         """
-        return self.constraints_df
+        return self._constraints_df
 
     def get_tables_dict(self):
         """
@@ -58,7 +58,7 @@ class DataLoader:
         Returns:
             tables_dict: The dictionary whose keys are the table names and whose values​are the ``pandas.DataFrame`` tables
         """
-        return self.tables_dict
+        return self._tables_dict
 
 
 if __name__ == '__main__':

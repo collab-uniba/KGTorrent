@@ -34,23 +34,23 @@ class MkPreprocessor:
             constraints_df: The ``pandas.DataFrame`` which contains the foreign key constrains information
         """
         # Keep track tables that have been already visited during the current recursive call
-        self.already_visited = []
+        self._already_visited = []
 
         # List of table names that need to be processed
 
         # Dictionary of dataframes that need to be processed
-        self.tables_dict = tables_dict
+        self._tables_dict = tables_dict
 
         # Dataframe containing constraints info:
         # (Referencing Table, Foreign Key, Referenced Table, Referenced Column)
-        self.constraints_df = constraints_df
+        self._constraints_df = constraints_df
 
         # Add and set up to false the (IsSolved) column
         # that informs if a constraint has been resolved
-        self.constraints_df['IsSolved'] = False
+        self._constraints_df['IsSolved'] = False
 
         # Dataframe containing info on row loss after referential integrity checks on referencing tables
-        self.stats = pd.DataFrame(columns=['Table', 'Initial#rows', 'Final#rows', 'Ratio'])
+        self._stats = pd.DataFrame(columns=['Table', 'Initial#rows', 'Final#rows', 'Ratio'])
 
     def _basic_preprocessing(self):
         """
@@ -59,49 +59,49 @@ class MkPreprocessor:
         The method also performs specific adjustments required by two Meta Kaggle tables named ``ForumMessageVotes`` and ``Submissions``.
         """
 
-        for table_name in self.tables_dict.keys():
+        for table_name in self._tables_dict.keys():
             # SPECIFIC TABLES FIX
             if 'ForumMessageVotes' in table_name:
                 print(f'\t{table_name} fix indexing...')
-                self.tables_dict[table_name].drop_duplicates(subset=['Id'], inplace=True)
+                self._tables_dict[table_name].drop_duplicates(subset=['Id'], inplace=True)
 
             if 'Submissions' in table_name:
                 print(f'\t{table_name} fix precision columns')
 
-                self.tables_dict[table_name]['PublicScoreLeaderboardDisplay'] = self.tables_dict[table_name][
+                self._tables_dict[table_name]['PublicScoreLeaderboardDisplay'] = self._tables_dict[table_name][
                     'PublicScoreLeaderboardDisplay'].map(lambda x: round(float(x), 3)).map(
                     lambda x: x if not np.isinf(x) else np.NaN)
 
-                self.tables_dict[table_name]['PublicScoreFullPrecision'] = self.tables_dict[table_name][
+                self._tables_dict[table_name]['PublicScoreFullPrecision'] = self._tables_dict[table_name][
                     'PublicScoreFullPrecision'].map(lambda x: round(float(x), 3)).map(
                     lambda x: x if not np.isinf(x) else np.NaN)
 
-                self.tables_dict[table_name]['PrivateScoreLeaderboardDisplay'] = self.tables_dict[table_name][
+                self._tables_dict[table_name]['PrivateScoreLeaderboardDisplay'] = self._tables_dict[table_name][
                     'PrivateScoreLeaderboardDisplay'].map(lambda x: round(float(x), 3)).map(
                     lambda x: x if not np.isinf(x) else np.NaN)
 
-                self.tables_dict[table_name]['PrivateScoreFullPrecision'] = self.tables_dict[table_name][
+                self._tables_dict[table_name]['PrivateScoreFullPrecision'] = self._tables_dict[table_name][
                     'PrivateScoreFullPrecision'].map(lambda x: round(float(x), 3)).map(
                     lambda x: x if not np.isinf(x) else np.NaN)
 
             # DATE COLUMNS FIX
-            date_columns = [column for column in self.tables_dict[table_name].columns if column.endswith('Date')]
+            date_columns = [column for column in self._tables_dict[table_name].columns if column.endswith('Date')]
 
             if len(date_columns) != 0:
                 print(f'\t{table_name} parsing date columns...')
                 for column in date_columns:
-                    self.tables_dict[table_name][column] = pd.to_datetime(self.tables_dict[table_name][column],
-                                                                          infer_datetime_format=True,
-                                                                          cache=True)
+                    self._tables_dict[table_name][column] = pd.to_datetime(self._tables_dict[table_name][column],
+                                                                           infer_datetime_format=True,
+                                                                           cache=True)
 
             # Set initial rows in stats df
             new_stats_row = {
                 'Table': table_name,
-                'Initial#rows': self.tables_dict[table_name].shape[0],
+                'Initial#rows': self._tables_dict[table_name].shape[0],
                 'Final#rows': None,
                 'Ratio': None
             }
-            self.stats = self.stats.append(new_stats_row, ignore_index=True)
+            self._stats = self._stats.append(new_stats_row, ignore_index=True)
 
         print()
 
@@ -118,17 +118,17 @@ class MkPreprocessor:
 
         print("### PREPROCESSING", referencing)
 
-        self.already_visited.append(referencing)  # TODO: Try to avoid this
-        referenced_list = self.constraints_df.loc[
-            self.constraints_df['Table'] == referencing,
+        self._already_visited.append(referencing)  # TODO: Try to avoid this
+        referenced_list = self._constraints_df.loc[
+            self._constraints_df['Table'] == referencing,
             'Referenced Table'].values
 
         # If referenced_list is NOT empty
         # I recursively process each referenced table and subsequently adjust the current
         if len(referenced_list) != 0:
             for referenced in referenced_list:
-                print(self.already_visited)
-                if referenced not in self.already_visited:
+                print(self._already_visited)
+                if referenced not in self._already_visited:
                     self._process_referencing_table(referenced)
                 self._clean_referencing_table(referencing, referenced)
 
@@ -148,9 +148,9 @@ class MkPreprocessor:
         # From the constraints_df, I select info on the foreign keys of the referencing table
         # that point to the current referenced table.
         # In most cases I have only one of such foreign keys, but they might be more
-        constraints_data = self.constraints_df.loc[
-            ((self.constraints_df['Table'] == referencing) &
-             (self.constraints_df['Referenced Table'] == referenced)),
+        constraints_data = self._constraints_df.loc[
+            ((self._constraints_df['Table'] == referencing) &
+             (self._constraints_df['Referenced Table'] == referenced)),
             ['Foreign Key', 'Referenced Column']
         ]
 
@@ -163,28 +163,28 @@ class MkPreprocessor:
             rc = constraint['Referenced Column']
             print(f'\t\tReferenced column: {rc}')
 
-            old_df_rows = self.tables_dict[referencing].shape[0]
+            old_df_rows = self._tables_dict[referencing].shape[0]
 
             # For each foreign key, I update the referencing table
             # by removing rows that miss a corresponding row in the referenced table
             print(
                 f'\tUpdating the referencing table "{referencing}" (foreign key "{fk}") '
                 f'with the referenced table "{referenced}"')
-            self.tables_dict[referencing] = self.tables_dict[referencing][
-                (self.tables_dict[referencing][fk].isin(self.tables_dict[referenced][rc])) |
-                (self.tables_dict[referencing][fk].isnull())
+            self._tables_dict[referencing] = self._tables_dict[referencing][
+                (self._tables_dict[referencing][fk].isin(self._tables_dict[referenced][rc])) |
+                (self._tables_dict[referencing][fk].isnull())
                 ]
 
             # If any rows have been removed, I mark the constraints in which
             # this table is 'Referenced Table' as not solved
-            if self.tables_dict[referencing].shape[0] != old_df_rows:
-                self.constraints_df.loc[
-                    (self.constraints_df['Referenced Table'] == referencing), 'IsSolved'] = False
+            if self._tables_dict[referencing].shape[0] != old_df_rows:
+                self._constraints_df.loc[
+                    (self._constraints_df['Referenced Table'] == referencing), 'IsSolved'] = False
 
             # Then I mark the constraint as solved
-            self.constraints_df.loc[((self.constraints_df['Table'] == referencing) &
-                                     (self.constraints_df['Referenced Table'] == referenced) &
-                                     (self.constraints_df['Foreign Key'] == fk)), 'IsSolved'] = True
+            self._constraints_df.loc[((self._constraints_df['Table'] == referencing) &
+                                      (self._constraints_df['Referenced Table'] == referenced) &
+                                      (self._constraints_df['Foreign Key'] == fk)), 'IsSolved'] = True
 
     def preprocess_mk(self):
         """
@@ -204,27 +204,27 @@ class MkPreprocessor:
         print('### Executing referential integrity preprocessing...')
 
         # While all constraint fields 'IsSolved' is false
-        while not self.constraints_df['IsSolved'].all():
+        while not self._constraints_df['IsSolved'].all():
 
             # Pre-process only referencing tables with constraints 'Not Solved' before writing
             # (and write those w/o fks)
-            for value in (self.constraints_df[~ self.constraints_df['IsSolved']])['Table'].unique():
+            for value in (self._constraints_df[~ self._constraints_df['IsSolved']])['Table'].unique():
                 print("\n")
                 print("-------------")
                 print("- New cycle -")
                 print("-------------")
 
                 self._process_referencing_table(value)
-                self.already_visited = []
+                self._already_visited = []
 
         # Final update of the stats table
-        for _, row in self.stats.iterrows():
-            self.stats.loc[self.stats['Table'] == row['Table'], 'Final#rows'] = self.tables_dict[row['Table']].shape[0]
+        for _, row in self._stats.iterrows():
+            self._stats.loc[self._stats['Table'] == row['Table'], 'Final#rows'] = self._tables_dict[row['Table']].shape[0]
 
-        self.stats['Ratio'] = self.stats['Final#rows'] / self.stats['Initial#rows'] * 100
-        self.stats['Ratio'] = self.stats['Ratio'].astype(float).round(decimals=2)
+        self._stats['Ratio'] = self._stats['Final#rows'] / self._stats['Initial#rows'] * 100
+        self._stats['Ratio'] = self._stats['Ratio'].astype(float).round(decimals=2)
 
-        return self.tables_dict, self.stats
+        return self._tables_dict, self._stats
 
 
 if __name__ == '__main__':
@@ -245,7 +245,7 @@ if __name__ == '__main__':
     # **************
 
     print("CONSTRAINTS_DF")
-    print(mk.constraints_df)
+    print(mk._constraints_df)
     print("\n")
 
     print("*************")

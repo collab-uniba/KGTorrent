@@ -28,7 +28,7 @@ from KGTorrent.data_loader import DataLoader
 
 class DbCommunicationHandler:
     """
-    This class creates an SQLAlchemy engine and has methods for creating, populating and querying
+    This singleton class creates an SQLAlchemy engine and has methods for creating, populating and querying
     a database with MetaKaggle data.
     """
 
@@ -44,7 +44,7 @@ class DbCommunicationHandler:
             db_name: The name of the database to interact with
         """
 
-        self.engine = create_engine('mysql+pymysql://{}:{}@{}:{}/{}?charset=utf8mb4'.format(
+        self._engine = create_engine('mysql+pymysql://{}:{}@{}:{}/{}?charset=utf8mb4'.format(
             db_username,
             db_password,
             db_host,
@@ -405,15 +405,15 @@ class DbCommunicationHandler:
                           )
 
             # Create all tables added to the metadata object
-            metadata.create_all(self.engine)
+            metadata.create_all(self._engine)
             # END build_db_schema
 
-        if database_exists(self.engine.url):
+        if database_exists(self._engine.url):
             if drop_if_exists:
-                drop_database(self.engine.url)
+                drop_database(self._engine.url)
             else:
                 raise DatabaseExistsError(f'Database {config.db_name} already exists.')
-        create_database(self.engine.url, 'utf8mb4')
+        create_database(self._engine.url, 'utf8mb4')
         build_db_schema()
 
     def db_exists(self):
@@ -423,7 +423,7 @@ class DbCommunicationHandler:
         Returns:
             bool: True if the database exists, False otherwise.
         """
-        return database_exists(self.engine.url)
+        return database_exists(self._engine.url)
 
     def write_tables(self, tables_dict):
         """
@@ -440,7 +440,7 @@ class DbCommunicationHandler:
 
             print('Writing "{}" to database...'.format(table_name))
             tables_dict[table_name].to_sql(sql_name,
-                                           self.engine,
+                                           self._engine,
                                            if_exists='append',  # TODO: make a choice here
                                            index=False,
                                            chunksize=10000
@@ -467,7 +467,7 @@ class DbCommunicationHandler:
 
             print('Executing "{}"'.format(query))
             try:
-                self.engine.execute(query)
+                self._engine.execute(query)
             except IntegrityError as e:
                 print("\t - INTEGRITY ERROR. Can't update table ", table_name, file=sys.stderr)
 
@@ -507,7 +507,7 @@ class DbCommunicationHandler:
         query = query + ';'
 
         # Execute the query
-        nb_identifiers = pd.read_sql(sql=query, con=self.engine)
+        nb_identifiers = pd.read_sql(sql=query, con=self._engine)
 
         return nb_identifiers
 
