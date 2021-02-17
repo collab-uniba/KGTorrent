@@ -1,5 +1,5 @@
 """
-This module defines the class that handles the communication to the database via SQLAlchemy.
+This module defines the class that handles the communication with the database via SQLAlchemy.
 """
 
 import sys
@@ -28,7 +28,7 @@ from KGTorrent.data_loader import DataLoader
 
 class DbCommunicationHandler:
     """
-    This singleton class creates an SQLAlchemy engine and has methods for creating, populating and querying
+    This class creates an SQLAlchemy engine and has methods for creating, populating and querying
     a database with MetaKaggle data.
     """
 
@@ -412,7 +412,7 @@ class DbCommunicationHandler:
             if drop_if_exists:
                 drop_database(self._engine.url)
             else:
-                raise DatabaseExistsError(f'Database {config.db_name} already exists.')
+                raise DatabaseExistsError(f'Database {self._engine.url.database} already exists.')
         create_database(self._engine.url, 'utf8mb4')
         build_db_schema()
 
@@ -430,7 +430,7 @@ class DbCommunicationHandler:
         This method writes tables to the database by using the ``pandas.DataFrame.to_sql`` method.
 
         Args:
-            tables_dict: The dictionary whose keys are the table names and whose values​are the ``pandas.DataFrame`` tables.
+            tables_dict: The dictionary whose keys are the table names and whose values are the ``pandas.DataFrame`` tables.
         """
 
         for table_name in tables_dict.keys():
@@ -450,10 +450,10 @@ class DbCommunicationHandler:
 
     def set_foreign_keys(self, constraints_df):
         """
-        This method sets the foreign key constraints based on information provided by the relative ``pandas.DataFrame``.
+        This method sets the foreign key constraints based on information provided by the related ``pandas.DataFrame``.
 
         Args:
-            constraints_df: The ``pandas.DataFrame`` which contains the foreign key constrains information
+            constraints_df: The ``pandas.DataFrame`` which contains the foreign key constraints information
         """
 
         for _, fk in constraints_df.iterrows():
@@ -474,7 +474,7 @@ class DbCommunicationHandler:
     def get_nb_identifiers(self, languages):
         """
         This method queries the database in order to retrieve slugs and identifiers of notebooks
-        belonging to the provided languages.
+        written in the provided languages.
 
         Args:
             languages: A string array of notebook languages present in Kaggle.

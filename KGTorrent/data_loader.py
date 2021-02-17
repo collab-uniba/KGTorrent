@@ -47,7 +47,7 @@ class DataLoader:
         Referencing Table, Foreign Key, Referenced Table, Referenced Column.
 
         Returns:
-            constraints_df: The ``pandas.DataFrame`` containing the foreign key constrains information.
+            constraints_df: The ``pandas.DataFrame`` containing the foreign key constraints information.
         """
         return self._constraints_df
 
@@ -56,7 +56,7 @@ class DataLoader:
         This method returns the dictionary of all 29 MetaKaggle ``pandas.DataFrame`` tables.
 
         Returns:
-            tables_dict: The dictionary whose keys are the table names and whose values​are the ``pandas.DataFrame`` tables
+            tables_dict: The dictionary whose keys are the table names and whose values are the ``pandas.DataFrame`` tables.
         """
         return self._tables_dict
 

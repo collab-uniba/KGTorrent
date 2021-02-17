@@ -22,21 +22,19 @@ class MkPreprocessor:
 
     def __init__(self, tables_dict, constraints_df):
         """
-        Providing a dictionary of tables that need to be preprocessed and
+        By providing a dictionary of tables that need to be preprocessed and
         the foreign key constraints information for the purpose, the constructor of this class:
          - adds a boolean field ``IsSolved`` to the constraints dataframe in order both to keep track of changes in
            referenced tables and to skip solved constraints in the process.
-         - initializes the list of the visited table used to avoid cycles while preprocessing.
+         - initializes the list of the visited tables used to avoid cycles while preprocessing.
          - initializes the summary stats ``pandas.DataFrame``
 
         Args:
-            tables_dict: The dictionary whose keys are the table names and whose values​are the ``pandas.DataFrame`` tables
-            constraints_df: The ``pandas.DataFrame`` which contains the foreign key constrains information
+            tables_dict: The dictionary whose keys are the table names and whose values are the ``pandas.DataFrame`` tables.
+            constraints_df: The ``pandas.DataFrame`` which contains the foreign key constraints information
         """
         # Keep track tables that have been already visited during the current recursive call
         self._already_visited = []
-
-        # List of table names that need to be processed
 
         # Dictionary of dataframes that need to be processed
         self._tables_dict = tables_dict
@@ -54,8 +52,8 @@ class MkPreprocessor:
 
     def _basic_preprocessing(self):
         """
-        This method performs basic preprocessing steps converting dates from string format into a more suitable format.
-        In the MetaKglle dataset date columns are easily recognizable through their names as they end with 'Date' suffix.
+        This method performs basic preprocessing steps converting dates from string format into the native Python date format.
+        In the Meta Kaggle dataset date columns are easily recognizable through their names as they end with 'Date' suffix.
         The method also performs specific adjustments required by two Meta Kaggle tables named ``ForumMessageVotes`` and ``Submissions``.
         """
 
@@ -118,7 +116,7 @@ class MkPreprocessor:
 
         print("### PREPROCESSING", referencing)
 
-        self._already_visited.append(referencing)  # TODO: Try to avoid this
+        self._already_visited.append(referencing)
         referenced_list = self._constraints_df.loc[
             self._constraints_df['Table'] == referencing,
             'Referenced Table'].values
@@ -134,11 +132,12 @@ class MkPreprocessor:
 
     def _clean_referencing_table(self, referencing, referenced):
         """
-        Given two tables, a referencing table and a referenced table, this method cleans the referencing table
-        by removing all those rows pointing at a tuple that cannot be found in the referenced table.
-        It also marks the relative foreign key constraint as solved and, whereas the rows are removed from
-        the referencing table, constraints are marked as unsolved where the table referencing is shown as
-        the referenced table in the constraints table
+        Given two tables - a referencing table and a referenced table - this method cleans
+        the referencing table by removing all the rows that point to missing tuples in the referenced table;
+        once the referencing table has been cleaned, this method marks the related foreign key constraint as "solved".
+        Moreover, each time the procedure actually removes rows from a referencing table, it updates
+        the constraints table accordingly: all the entries in which the current referencing table plays
+        the role of referenced table are marked as "unsolved".
 
         Args:
             referencing: the table to be cleaned.
