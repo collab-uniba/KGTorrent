@@ -5,11 +5,11 @@ KGTorrent
    :target: https://zenodo.org/badge/latestdoi/253627890
 
 
-**TL/DR**: `KGTorrent <http://neo.di.uniba.it:8080/share.cgi?ssid=0syF2vm>`_ is a large dataset of Jupyter notebooks with rich metadata retrieved from `Kaggle <https://www.kaggle.com>`_. This repository contains the Python scripts developed to create and refresh the collection.
+**TL/DR**: `KGTorrent <https://doi.org/10.5281/zenodo.4468522>`_ is a large dataset of Jupyter notebooks with rich metadata retrieved from `Kaggle <https://www.kaggle.com>`_. This repository contains the Python scripts developed to create and refresh the collection.
 
-Given their growing popularity among data scientists, computational notebooks - and in particular `Jupyter notebooks <https://jupyter.org>`_ - are being increasingly studied by researchers worldwide. Generally, the aim is to understand how they are typically used, identify possible flaws, and inform the design of extensions and updates of the tool. To ease these kind of research endeavors, we collected and shared a large dataset of 248,761 Jupyter notebooks from Kaggle, named `KGTorrent <http://neo.di.uniba.it:8080/share.cgi?ssid=0syF2vm>`_.
+Given their growing popularity among data scientists, computational notebooks - and in particular `Jupyter notebooks <https://jupyter.org>`_ - are being increasingly studied by researchers worldwide. Generally, the aim is to understand how they are typically used, identify possible flaws, and inform the design of extensions and updates of the tool. To ease these kind of research endeavors, we collected and shared a large dataset of 248,761 Jupyter notebooks from Kaggle, named `KGTorrent <https://doi.org/10.5281/zenodo.4468522>`_.
 
-`Kaggle <https://www.kaggle.com>`_ is a web platform hosting machine learning competitions that enables the creation and execution of Jupyter notebooks in a containerized computational environment. By leveraging `Meta Kaggle <https://www.kaggle.com/kaggle/meta-kaggle>`_, a dataset that is publicly available on the platform, we also built a companion MySQL database containing metadata on the notebooks in our dataset.
+Kaggle is a web platform hosting machine learning competitions that enables the creation and execution of Jupyter notebooks in a containerized computational environment. By leveraging `Meta Kaggle <https://www.kaggle.com/kaggle/meta-kaggle>`_, a dataset that is publicly available on the platform, we also built a companion MySQL database containing metadata on the notebooks in our dataset.
 
 This repository hosts the Python scripts we developed to create KGTorrent. By leveraging the latest version of Meta Kaggle, the same scripts can also be used to refresh the collection.
 
@@ -72,7 +72,7 @@ Usage examples
 
 **Replicating the collection**
 
-To replicate our collection, you first have to download and uncompress the Meta Kaggle version that we used to build the KGTorrent companion database (retrieved on October 27, 2020). Since it is no more available on Kaggle, we share it as part of the `dataset package <http://neo.di.uniba.it:8080/share.cgi?ssid=0syF2vm>`_: it is the compressed archive named ``MetaKaggle27Oct2020.tar.bz2``.
+To replicate our collection, you first have to download and uncompress the Meta Kaggle version that we used to build the KGTorrent companion database (retrieved on October 27, 2020). Since it is no more available on Kaggle, we share it as part of the `dataset package <https://doi.org/10.5281/zenodo.4468522>`_: it is the compressed archive named ``MetaKaggle27Oct2020.tar.bz2``.
 
 Once Meta Kaggle is available on your machine and the corresponding environment variable has been set, you can start the creation process by issuing the following command::
 
