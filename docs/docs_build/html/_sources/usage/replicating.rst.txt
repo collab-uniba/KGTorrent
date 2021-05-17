@@ -1,7 +1,7 @@
 Replicating the collection
 ==========================
 
-To replicate our collection, you first have to download and uncompress the Meta Kaggle version that we used to build the KGTorrent companion database (retrieved on October 27, 2020). Since it is no more available on Kaggle, we share it as part of the `dataset package <http://neo.di.uniba.it:8080/share.cgi?ssid=0syF2vm>`_: it is the compressed archive named ``MetaKaggle27Oct2020.tar.bz2``.
+To replicate our collection, you first have to download and uncompress the Meta Kaggle version that we used to build the KGTorrent companion database (retrieved on October 27, 2020). Since it is no more available on Kaggle, we share it as part of the `dataset package <https://doi.org/10.5281/zenodo.4468522>`_: it is the compressed archive named ``MetaKaggle27Oct2020.tar.bz2``.
 
 Once Meta Kaggle is available on your machine and the corresponding environment variable has been set, you can start the creation process by issuing the following command::
 

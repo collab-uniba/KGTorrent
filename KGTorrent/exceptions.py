@@ -15,3 +15,13 @@ class TableNotPreprocessedError(Error):
 
     def __init__(self, message):
         self.message = message
+
+class DatabaseExistsError(Error):
+    """Exception raised when the database name already exists and has not been forced to remove.
+
+    Attributes:
+        message (str): short message containing the explanation of the error.
+    """
+
+    def __init__(self, message):
+        self.message = message
