@@ -138,6 +138,7 @@ Versions
 --------
 
 - 1.0.0 - First official release of KGTorrent.
+- 1.1.0 - Major refactoring of the KGTorrent scripts.
 
 
 
