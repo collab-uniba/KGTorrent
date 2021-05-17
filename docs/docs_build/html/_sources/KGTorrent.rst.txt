@@ -7,6 +7,16 @@ KGTorrent package
    :show-inheritance:
 
 
+kgtorrent
+---------
+
+.. automodule:: KGTorrent.kgtorrent
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+
+
 config
 ------
 
@@ -16,28 +26,10 @@ config
    :show-inheritance:
 
 
-db_connection_handler
----------------------
+db_communication_handler
+------------------------
 
-.. automodule:: KGTorrent.db_connection_handler
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-
-buildDbSchema
--------------
-
-.. automodule:: KGTorrent.build_db_schema
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-
-populateDb
-----------
-
-.. automodule:: KGTorrent.populate_db
+.. automodule:: KGTorrent.db_communication_handler
    :members:
    :undoc-members:
    :show-inheritance:

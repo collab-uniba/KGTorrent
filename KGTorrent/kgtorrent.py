@@ -12,9 +12,8 @@ from KGTorrent.mk_preprocessor import MkPreprocessor
 
 
 def main():
-    """This is the entry point for this CLI application.
-    Here we will handle possible arguments and orchestrate function/method calls
-    to build and populate the KGTorrent database"""
+    """Entry-point function for KGTorrent.
+    It orchestrates function/method calls to build and populate the KGTorrent database and dataset."""
 
     # Create the parser
     my_parser = argparse.ArgumentParser(
